@@ -311,7 +311,6 @@ function CharacterModel({
     return cloned;
   }, [object, bodyColor]);
 
-  /* 화면 기준 왼쪽 위치 */
   const screenLeftEyePosition: [
     number,
     number,
@@ -322,7 +321,6 @@ function CharacterModel({
     -23.73,
   ];
 
-  /* 화면 기준 오른쪽 위치 */
   const screenRightEyePosition: [
     number,
     number,
@@ -333,7 +331,6 @@ function CharacterModel({
     -23.73,
   ];
 
-  /* 곡률 */
   const screenLeftEyeRotation: [
     number,
     number,
@@ -367,16 +364,16 @@ function CharacterModel({
       >
         <primitive object={model} />
 
-        {/* 화면에서 봤을 때 왼쪽 */}
+        {/* 중요: 화면 왼쪽 위치에는 rightEye 값을 넣음 */}
         <Eye3D
-          text={leftEye}
+          text={rightEye}
           position={screenLeftEyePosition}
           rotation={screenLeftEyeRotation}
         />
 
-        {/* 화면에서 봤을 때 오른쪽 */}
+        {/* 중요: 화면 오른쪽 위치에는 leftEye 값을 넣음 */}
         <Eye3D
-          text={rightEye}
+          text={leftEye}
           position={screenRightEyePosition}
           rotation={screenRightEyeRotation}
         />
@@ -437,10 +434,6 @@ export default function Home() {
   ] = useState<
     "color" | "eyes"
   >("color");
-
-  /* =====================================================
-     COMMON UI
-  ===================================================== */
 
   const MobileFrame = ({
     children,
@@ -511,15 +504,10 @@ export default function Home() {
     </button>
   );
 
-  /* =====================================================
-     START
-  ===================================================== */
-
   if (step === "start") {
     return (
       <MobileFrame>
         <div className="flex flex-1 items-center justify-center px-8">
-
           <Image
             src="/plabla-logo-transparent.svg"
             alt="PlaBla Logo"
@@ -528,11 +516,9 @@ export default function Home() {
             priority
             className="h-auto w-[210px]"
           />
-
         </div>
 
         <div className="px-6 pb-[max(2rem,env(safe-area-inset-bottom))]">
-
           <BottomButton
             onClick={() =>
               setStep("language")
@@ -540,22 +526,15 @@ export default function Home() {
           >
             Start
           </BottomButton>
-
         </div>
       </MobileFrame>
     );
   }
 
-  /* =====================================================
-     LANGUAGE
-  ===================================================== */
-
   if (step === "language") {
     return (
       <MobileFrame>
-
         <div className="flex flex-1 flex-col overflow-y-auto px-6 pt-8">
-
           <BackButton
             onClick={() =>
               setStep("start")
@@ -573,7 +552,6 @@ export default function Home() {
           </p>
 
           <div className="flex flex-col gap-3">
-
             {languages.map((item) => {
               const selected =
                 language === item.name;
@@ -609,13 +587,10 @@ export default function Home() {
                 </button>
               );
             })}
-
           </div>
-
         </div>
 
         <div className="px-6 pt-5 pb-[max(2rem,env(safe-area-inset-bottom))]">
-
           <BottomButton
             disabled={!language}
             onClick={() =>
@@ -624,23 +599,15 @@ export default function Home() {
           >
             Next
           </BottomButton>
-
         </div>
-
       </MobileFrame>
     );
   }
 
-  /* =====================================================
-     INFO
-  ===================================================== */
-
   if (step === "info") {
     return (
       <MobileFrame>
-
         <div className="flex flex-1 flex-col overflow-y-auto px-6 pt-8">
-
           <BackButton
             onClick={() =>
               setStep("language")
@@ -658,13 +625,11 @@ export default function Home() {
           </p>
 
           <section className="mb-8">
-
             <h2 className="mb-3 font-bold">
               Your level
             </h2>
 
             <div className="grid grid-cols-3 gap-3">
-
               {levels.map((item) => (
                 <button
                   key={item}
@@ -681,19 +646,15 @@ export default function Home() {
                   {item}
                 </button>
               ))}
-
             </div>
-
           </section>
 
           <section>
-
             <h2 className="mb-3 font-bold">
               Learning goal
             </h2>
 
             <div className="grid grid-cols-2 gap-3">
-
               {goals.map((item) => (
                 <button
                   key={item}
@@ -710,15 +671,11 @@ export default function Home() {
                   {item}
                 </button>
               ))}
-
             </div>
-
           </section>
-
         </div>
 
         <div className="px-6 pt-5 pb-[max(2rem,env(safe-area-inset-bottom))]">
-
           <BottomButton
             disabled={!level || !goal}
             onClick={() =>
@@ -727,23 +684,15 @@ export default function Home() {
           >
             Next
           </BottomButton>
-
         </div>
-
       </MobileFrame>
     );
   }
 
-  /* =====================================================
-     CHARACTER
-  ===================================================== */
-
   if (step === "character") {
     return (
       <MobileFrame>
-
         <div className="flex-1 overflow-y-auto overscroll-y-contain px-6 pt-8 pb-8">
-
           <BackButton
             onClick={() =>
               setStep("info")
@@ -759,7 +708,6 @@ export default function Home() {
           </p>
 
           <div className="relative mt-5 h-[285px] w-full overflow-hidden rounded-[30px] bg-white sm:h-[330px]">
-
             <Canvas
               camera={{
                 position: [
@@ -770,10 +718,7 @@ export default function Home() {
                 fov: 32,
               }}
             >
-
-              <ambientLight
-                intensity={2.7}
-              />
+              <ambientLight intensity={2.7} />
 
               <directionalLight
                 position={[
@@ -809,9 +754,7 @@ export default function Home() {
                   0,
                 ]}
               />
-
             </Canvas>
-
           </div>
 
           <p className="mt-2 text-center text-xs text-[#202020]/30">
@@ -819,17 +762,13 @@ export default function Home() {
           </p>
 
           <div className="mt-5 grid grid-cols-2 rounded-full bg-[#EEEEEE] p-1">
-
             <button
               type="button"
               onClick={() =>
-                setCharacterTab(
-                  "color"
-                )
+                setCharacterTab("color")
               }
               className={`rounded-full py-2.5 font-semibold transition ${
-                characterTab ===
-                "color"
+                characterTab === "color"
                   ? "bg-white text-[#202020] shadow-sm"
                   : "text-[#202020]/40"
               }`}
@@ -840,31 +779,25 @@ export default function Home() {
             <button
               type="button"
               onClick={() =>
-                setCharacterTab(
-                  "eyes"
-                )
+                setCharacterTab("eyes")
               }
               className={`rounded-full py-2.5 font-semibold transition ${
-                characterTab ===
-                "eyes"
+                characterTab === "eyes"
                   ? "bg-white text-[#202020] shadow-sm"
                   : "text-[#202020]/40"
               }`}
             >
               Eyes
             </button>
-
           </div>
 
           {characterTab === "color" && (
             <div className="mt-6">
-
               <p className="mb-4 font-bold text-[#202020]">
                 Body color
               </p>
 
               <div className="flex flex-wrap gap-4 px-1 py-1">
-
                 {bodyColors.map((color) => (
                   <button
                     key={color.value}
@@ -887,15 +820,12 @@ export default function Home() {
                     }}
                   />
                 ))}
-
               </div>
-
             </div>
           )}
 
           {characterTab === "eyes" && (
             <div className="mt-6">
-
               <p className="mb-1 font-bold text-[#202020]">
                 Eyes
               </p>
@@ -905,9 +835,7 @@ export default function Home() {
               </p>
 
               <div className="grid grid-cols-2 gap-3">
-
                 <div>
-
                   <label className="mb-2 block text-sm font-semibold text-[#202020]">
                     Left eye
                   </label>
@@ -931,11 +859,9 @@ export default function Home() {
                     autoComplete="off"
                     className="h-16 w-full rounded-[20px] border-2 border-transparent bg-white text-center text-2xl text-[#202020] outline-none transition focus:border-[#BFFF00]"
                   />
-
                 </div>
 
                 <div>
-
                   <label className="mb-2 block text-sm font-semibold text-[#202020]">
                     Right eye
                   </label>
@@ -959,9 +885,7 @@ export default function Home() {
                     autoComplete="off"
                     className="h-16 w-full rounded-[20px] border-2 border-transparent bg-white text-center text-2xl text-[#202020] outline-none transition focus:border-[#BFFF00]"
                   />
-
                 </div>
-
               </div>
 
               <p className="mb-3 mt-6 text-sm font-semibold text-[#202020]">
@@ -969,7 +893,6 @@ export default function Home() {
               </p>
 
               <div className="grid grid-cols-6 gap-2">
-
                 {eyeSuggestions.map((eye) => (
                   <button
                     key={eye}
@@ -982,14 +905,11 @@ export default function Home() {
                     {eye}
                   </button>
                 ))}
-
               </div>
-
             </div>
           )}
 
           <div className="mt-8 pb-[max(1rem,env(safe-area-inset-bottom))]">
-
             <BottomButton
               onClick={() =>
                 setStep("space")
@@ -997,25 +917,16 @@ export default function Home() {
             >
               Continue
             </BottomButton>
-
           </div>
-
         </div>
-
       </MobileFrame>
     );
   }
 
-  /* =====================================================
-     SPACE
-  ===================================================== */
-
   if (step === "space") {
     return (
       <MobileFrame>
-
         <div className="flex flex-1 flex-col overflow-y-auto px-6 pt-8">
-
           <BackButton
             onClick={() =>
               setStep("character")
@@ -1033,7 +944,6 @@ export default function Home() {
           </p>
 
           <div className="flex flex-col gap-4 pb-5">
-
             {spaces.map((item) => {
               const selected =
                 space === item.name;
@@ -1049,16 +959,13 @@ export default function Home() {
                   }
                   className="overflow-hidden rounded-[26px] bg-white text-left"
                 >
-
                   <div className="relative h-[155px]">
-
                     <Image
                       src={item.image}
                       alt={item.name}
                       fill
                       className="object-cover"
                     />
-
                   </div>
 
                   <div
@@ -1068,9 +975,7 @@ export default function Home() {
                         : "bg-white"
                     }`}
                   >
-
                     <div>
-
                       <p className="font-bold text-[#202020]">
                         {item.name}
                       </p>
@@ -1078,25 +983,19 @@ export default function Home() {
                       <p className="mt-1 text-xs text-[#202020]/50">
                         {item.description}
                       </p>
-
                     </div>
 
                     <div className="rounded-full bg-white/75 px-3 py-2 text-xs font-semibold text-[#202020]">
                       👥 {item.people}
                     </div>
-
                   </div>
-
                 </button>
               );
             })}
-
           </div>
-
         </div>
 
         <div className="px-6 pt-4 pb-[max(2rem,env(safe-area-inset-bottom))]">
-
           <BottomButton
             disabled={!space}
             onClick={() =>
@@ -1105,18 +1004,14 @@ export default function Home() {
           >
             Enter Space
           </BottomButton>
-
         </div>
-
       </MobileFrame>
     );
   }
 
   return (
     <div className="flex min-h-dvh items-center justify-center bg-[#202020]">
-
       <div className="text-center">
-
         <p className="text-sm text-white/50">
           PlaBla Space
         </p>
@@ -1138,9 +1033,7 @@ export default function Home() {
         >
           Back
         </button>
-
       </div>
-
     </div>
   );
 }

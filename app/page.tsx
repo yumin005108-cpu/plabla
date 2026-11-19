@@ -270,38 +270,28 @@ function CharacterModel({
       object.clone(true);
 
     cloned.traverse((child) => {
-      if (
-        !(child instanceof THREE.Mesh)
-      ) {
+      if (!(child instanceof THREE.Mesh)) {
         return;
       }
 
-      if (
-        Array.isArray(
-          child.material
-        )
-      ) {
+      if (Array.isArray(child.material)) {
         child.material =
-          child.material.map(
-            (material) => {
-              const copy =
-                material.clone();
+          child.material.map((material) => {
+            const copy =
+              material.clone();
 
-              if (
-                copy.name ===
-                "bodyColor_Green"
-              ) {
-                copy.color.set(
-                  bodyColor
-                );
-              }
-
-              return copy;
+            if (
+              copy.name ===
+              "bodyColor_Green"
+            ) {
+              copy.color.set(
+                bodyColor
+              );
             }
-          );
-      } else if (
-        child.material
-      ) {
+
+            return copy;
+          });
+      } else if (child.material) {
         const copy =
           child.material.clone();
 
@@ -321,18 +311,8 @@ function CharacterModel({
     return cloned;
   }, [object, bodyColor]);
 
-  /* 눈 위치 */
-  const leftEyePosition: [
-    number,
-    number,
-    number
-  ] = [
-    -27.90,
-    1.42,
-    -23.73,
-  ];
-
-  const rightEyePosition: [
+  /* 화면 기준 왼쪽 위치 */
+  const screenLeftEyePosition: [
     number,
     number,
     number
@@ -342,24 +322,35 @@ function CharacterModel({
     -23.73,
   ];
 
-  /* 얼굴 곡률 느낌 */
-  const leftEyeRotation: [
+  /* 화면 기준 오른쪽 위치 */
+  const screenRightEyePosition: [
     number,
     number,
     number
   ] = [
-    0,
-    Math.PI + 0.18,
-    0,
+    -27.90,
+    1.42,
+    -23.73,
   ];
 
-  const rightEyeRotation: [
+  /* 곡률 */
+  const screenLeftEyeRotation: [
     number,
     number,
     number
   ] = [
     0,
     Math.PI - 0.18,
+    0,
+  ];
+
+  const screenRightEyeRotation: [
+    number,
+    number,
+    number
+  ] = [
+    0,
+    Math.PI + 0.18,
     0,
   ];
 
@@ -376,16 +367,18 @@ function CharacterModel({
       >
         <primitive object={model} />
 
+        {/* 화면에서 봤을 때 왼쪽 */}
         <Eye3D
           text={leftEye}
-          position={leftEyePosition}
-          rotation={leftEyeRotation}
+          position={screenLeftEyePosition}
+          rotation={screenLeftEyeRotation}
         />
 
+        {/* 화면에서 봤을 때 오른쪽 */}
         <Eye3D
           text={rightEye}
-          position={rightEyePosition}
-          rotation={rightEyeRotation}
+          position={screenRightEyePosition}
+          rotation={screenRightEyeRotation}
         />
       </group>
     </Center>
@@ -522,9 +515,7 @@ export default function Home() {
      START
   ===================================================== */
 
-  if (
-    step === "start"
-  ) {
+  if (step === "start") {
     return (
       <MobileFrame>
         <div className="flex flex-1 items-center justify-center px-8">
@@ -544,9 +535,7 @@ export default function Home() {
 
           <BottomButton
             onClick={() =>
-              setStep(
-                "language"
-              )
+              setStep("language")
             }
           >
             Start
@@ -561,9 +550,7 @@ export default function Home() {
      LANGUAGE
   ===================================================== */
 
-  if (
-    step === "language"
-  ) {
+  if (step === "language") {
     return (
       <MobileFrame>
 
@@ -587,52 +574,41 @@ export default function Home() {
 
           <div className="flex flex-col gap-3">
 
-            {languages.map(
-              (item) => {
-                const selected =
-                  language ===
-                  item.name;
+            {languages.map((item) => {
+              const selected =
+                language === item.name;
 
-                return (
-                  <button
-                    key={
+              return (
+                <button
+                  key={item.name}
+                  type="button"
+                  onClick={() =>
+                    setLanguage(
                       item.name
-                    }
-                    type="button"
-                    onClick={() =>
-                      setLanguage(
-                        item.name
-                      )
-                    }
-                    className={`flex h-[72px] items-center gap-4 rounded-[22px] border-2 px-4 text-left ${
+                    )
+                  }
+                  className={`flex h-[72px] items-center gap-4 rounded-[22px] border-2 px-4 text-left ${
+                    selected
+                      ? "border-[#BFFF00] bg-[#F7FFE5]"
+                      : "border-transparent bg-white"
+                  }`}
+                >
+                  <div
+                    className={`flex h-11 w-11 items-center justify-center rounded-full text-lg font-bold ${
                       selected
-                        ? "border-[#BFFF00] bg-[#F7FFE5]"
-                        : "border-transparent bg-white"
+                        ? "bg-[#BFFF00]"
+                        : "bg-[#F1F1F1]"
                     }`}
                   >
+                    {item.symbol}
+                  </div>
 
-                    <div
-                      className={`flex h-11 w-11 items-center justify-center rounded-full text-lg font-bold ${
-                        selected
-                          ? "bg-[#BFFF00]"
-                          : "bg-[#F1F1F1]"
-                      }`}
-                    >
-                      {
-                        item.symbol
-                      }
-                    </div>
-
-                    <span className="font-semibold text-[#202020]">
-                      {
-                        item.name
-                      }
-                    </span>
-
-                  </button>
-                );
-              }
-            )}
+                  <span className="font-semibold text-[#202020]">
+                    {item.name}
+                  </span>
+                </button>
+              );
+            })}
 
           </div>
 
@@ -641,9 +617,7 @@ export default function Home() {
         <div className="px-6 pt-5 pb-[max(2rem,env(safe-area-inset-bottom))]">
 
           <BottomButton
-            disabled={
-              !language
-            }
+            disabled={!language}
             onClick={() =>
               setStep("info")
             }
@@ -658,12 +632,10 @@ export default function Home() {
   }
 
   /* =====================================================
-     LEVEL + GOAL
+     INFO
   ===================================================== */
 
-  if (
-    step === "info"
-  ) {
+  if (step === "info") {
     return (
       <MobileFrame>
 
@@ -671,9 +643,7 @@ export default function Home() {
 
           <BackButton
             onClick={() =>
-              setStep(
-                "language"
-              )
+              setStep("language")
             }
           />
 
@@ -695,24 +665,22 @@ export default function Home() {
 
             <div className="grid grid-cols-3 gap-3">
 
-              {levels.map(
-                (item) => (
-                  <button
-                    key={item}
-                    type="button"
-                    onClick={() =>
-                      setLevel(item)
-                    }
-                    className={`h-[76px] rounded-[22px] border-2 text-sm font-semibold ${
-                      level === item
-                        ? "border-[#BFFF00] bg-[#F7FFE5]"
-                        : "border-transparent bg-white"
-                    }`}
-                  >
-                    {item}
-                  </button>
-                )
-              )}
+              {levels.map((item) => (
+                <button
+                  key={item}
+                  type="button"
+                  onClick={() =>
+                    setLevel(item)
+                  }
+                  className={`h-[76px] rounded-[22px] border-2 text-sm font-semibold ${
+                    level === item
+                      ? "border-[#BFFF00] bg-[#F7FFE5]"
+                      : "border-transparent bg-white"
+                  }`}
+                >
+                  {item}
+                </button>
+              ))}
 
             </div>
 
@@ -726,24 +694,22 @@ export default function Home() {
 
             <div className="grid grid-cols-2 gap-3">
 
-              {goals.map(
-                (item) => (
-                  <button
-                    key={item}
-                    type="button"
-                    onClick={() =>
-                      setGoal(item)
-                    }
-                    className={`h-[76px] rounded-[22px] border-2 font-semibold ${
-                      goal === item
-                        ? "border-[#BFFF00] bg-[#F7FFE5]"
-                        : "border-transparent bg-white"
-                    }`}
-                  >
-                    {item}
-                  </button>
-                )
-              )}
+              {goals.map((item) => (
+                <button
+                  key={item}
+                  type="button"
+                  onClick={() =>
+                    setGoal(item)
+                  }
+                  className={`h-[76px] rounded-[22px] border-2 font-semibold ${
+                    goal === item
+                      ? "border-[#BFFF00] bg-[#F7FFE5]"
+                      : "border-transparent bg-white"
+                  }`}
+                >
+                  {item}
+                </button>
+              ))}
 
             </div>
 
@@ -754,14 +720,9 @@ export default function Home() {
         <div className="px-6 pt-5 pb-[max(2rem,env(safe-area-inset-bottom))]">
 
           <BottomButton
-            disabled={
-              !level ||
-              !goal
-            }
+            disabled={!level || !goal}
             onClick={() =>
-              setStep(
-                "character"
-              )
+              setStep("character")
             }
           >
             Next
@@ -774,17 +735,13 @@ export default function Home() {
   }
 
   /* =====================================================
-     CHARACTER CUSTOMIZE
+     CHARACTER
   ===================================================== */
 
-  if (
-    step ===
-    "character"
-  ) {
+  if (step === "character") {
     return (
       <MobileFrame>
 
-        {/* 모바일 전체 스크롤 */}
         <div className="flex-1 overflow-y-auto overscroll-y-contain px-6 pt-8 pb-8">
 
           <BackButton
@@ -801,10 +758,6 @@ export default function Home() {
             Create your PlaBla character.
           </p>
 
-          {/* ======================
-              3D PREVIEW
-          ====================== */}
-
           <div className="relative mt-5 h-[285px] w-full overflow-hidden rounded-[30px] bg-white sm:h-[330px]">
 
             <Canvas
@@ -819,9 +772,7 @@ export default function Home() {
             >
 
               <ambientLight
-                intensity={
-                  2.7
-                }
+                intensity={2.7}
               />
 
               <directionalLight
@@ -830,9 +781,7 @@ export default function Home() {
                   6,
                   6,
                 ]}
-                intensity={
-                  2.8
-                }
+                intensity={2.8}
               />
 
               <directionalLight
@@ -841,33 +790,19 @@ export default function Home() {
                   2,
                   3,
                 ]}
-                intensity={
-                  1.4
-                }
+                intensity={1.4}
               />
 
               <CharacterModel
-                bodyColor={
-                  bodyColor
-                }
-                leftEye={
-                  leftEye
-                }
-                rightEye={
-                  rightEye
-                }
+                bodyColor={bodyColor}
+                leftEye={leftEye}
+                rightEye={rightEye}
               />
 
               <OrbitControls
-                enablePan={
-                  false
-                }
-                enableZoom={
-                  false
-                }
-                enableRotate={
-                  true
-                }
+                enablePan={false}
+                enableZoom={false}
+                enableRotate={true}
                 target={[
                   0,
                   0.2,
@@ -882,10 +817,6 @@ export default function Home() {
           <p className="mt-2 text-center text-xs text-[#202020]/30">
             Drag to rotate
           </p>
-
-          {/* ======================
-              TABS
-          ====================== */}
 
           <div className="mt-5 grid grid-cols-2 rounded-full bg-[#EEEEEE] p-1">
 
@@ -925,12 +856,7 @@ export default function Home() {
 
           </div>
 
-          {/* ======================
-              COLOR
-          ====================== */}
-
-          {characterTab ===
-            "color" && (
+          {characterTab === "color" && (
             <div className="mt-6">
 
               <p className="mb-4 font-bold text-[#202020]">
@@ -939,48 +865,35 @@ export default function Home() {
 
               <div className="flex flex-wrap gap-4 px-1 py-1">
 
-                {bodyColors.map(
-                  (
-                    color
-                  ) => (
-                    <button
-                      key={
+                {bodyColors.map((color) => (
+                  <button
+                    key={color.value}
+                    type="button"
+                    aria-label={color.name}
+                    onClick={() =>
+                      setBodyColor(
                         color.value
-                      }
-                      type="button"
-                      aria-label={
-                        color.name
-                      }
-                      onClick={() =>
-                        setBodyColor(
-                          color.value
-                        )
-                      }
-                      className={`h-12 w-12 shrink-0 rounded-full ${
-                        bodyColor ===
-                        color.value
-                          ? "ring-2 ring-[#202020] ring-offset-1 ring-offset-[#F8F8F8]"
-                          : ""
-                      }`}
-                      style={{
-                        backgroundColor:
-                          color.value,
-                      }}
-                    />
-                  )
-                )}
+                      )
+                    }
+                    className={`h-12 w-12 shrink-0 rounded-full ${
+                      bodyColor ===
+                      color.value
+                        ? "ring-2 ring-[#202020] ring-offset-1 ring-offset-[#F8F8F8]"
+                        : ""
+                    }`}
+                    style={{
+                      backgroundColor:
+                        color.value,
+                    }}
+                  />
+                ))}
 
               </div>
 
             </div>
           )}
 
-          {/* ======================
-              EYES
-          ====================== */}
-
-          {characterTab ===
-            "eyes" && (
+          {characterTab === "eyes" && (
             <div className="mt-6">
 
               <p className="mb-1 font-bold text-[#202020]">
@@ -988,12 +901,10 @@ export default function Home() {
               </p>
 
               <p className="mb-5 text-xs text-[#202020]/40">
-                Enter one character for each eye.
+                Left and right are based on what you see on the screen.
               </p>
 
               <div className="grid grid-cols-2 gap-3">
-
-                {/* LEFT */}
 
                 <div>
 
@@ -1002,27 +913,17 @@ export default function Home() {
                   </label>
 
                   <input
-                    value={
-                      leftEye
-                    }
-                    onChange={(
-                      event
-                    ) => {
+                    value={leftEye}
+                    onChange={(event) => {
                       const value =
                         Array.from(
-                          event
-                            .target
-                            .value
+                          event.target.value
                         );
 
                       setLeftEye(
                         value
-                          .slice(
-                            -1
-                          )
-                          .join(
-                            ""
-                          )
+                          .slice(-1)
+                          .join("")
                       );
                     }}
                     placeholder="の"
@@ -1033,8 +934,6 @@ export default function Home() {
 
                 </div>
 
-                {/* RIGHT */}
-
                 <div>
 
                   <label className="mb-2 block text-sm font-semibold text-[#202020]">
@@ -1042,27 +941,17 @@ export default function Home() {
                   </label>
 
                   <input
-                    value={
-                      rightEye
-                    }
-                    onChange={(
-                      event
-                    ) => {
+                    value={rightEye}
+                    onChange={(event) => {
                       const value =
                         Array.from(
-                          event
-                            .target
-                            .value
+                          event.target.value
                         );
 
                       setRightEye(
                         value
-                          .slice(
-                            -1
-                          )
-                          .join(
-                            ""
-                          )
+                          .slice(-1)
+                          .join("")
                       );
                     }}
                     placeholder="中"
@@ -1075,55 +964,35 @@ export default function Home() {
 
               </div>
 
-              {/* SUGGESTIONS */}
-
               <p className="mb-3 mt-6 text-sm font-semibold text-[#202020]">
                 Suggestions
               </p>
 
               <div className="grid grid-cols-6 gap-2">
 
-                {eyeSuggestions.map(
-                  (
-                    eye
-                  ) => (
-                    <button
-                      key={
-                        eye
-                      }
-                      type="button"
-                      onClick={() =>
-                        setLeftEye(
-                          eye
-                        )
-                      }
-                      className="aspect-square rounded-[16px] bg-white text-xl text-[#202020]"
-                    >
-                      {eye}
-                    </button>
-                  )
-                )}
+                {eyeSuggestions.map((eye) => (
+                  <button
+                    key={eye}
+                    type="button"
+                    onClick={() =>
+                      setLeftEye(eye)
+                    }
+                    className="aspect-square rounded-[16px] bg-white text-xl text-[#202020]"
+                  >
+                    {eye}
+                  </button>
+                ))}
 
               </div>
 
-              <p className="mt-3 text-xs text-[#202020]/35">
-                Type a character above or choose a suggestion.
-              </p>
-
             </div>
           )}
-
-          {/* ======================
-              CONTINUE
-          ====================== */}
 
           <div className="mt-8 pb-[max(1rem,env(safe-area-inset-bottom))]">
 
             <BottomButton
               onClick={() =>
-                setStep(
-                  "space"
-                )
+                setStep("space")
               }
             >
               Continue
@@ -1138,12 +1007,10 @@ export default function Home() {
   }
 
   /* =====================================================
-     SPACE SELECT
+     SPACE
   ===================================================== */
 
-  if (
-    step === "space"
-  ) {
+  if (step === "space") {
     return (
       <MobileFrame>
 
@@ -1151,9 +1018,7 @@ export default function Home() {
 
           <BackButton
             onClick={() =>
-              setStep(
-                "character"
-              )
+              setStep("character")
             }
           />
 
@@ -1169,78 +1034,62 @@ export default function Home() {
 
           <div className="flex flex-col gap-4 pb-5">
 
-            {spaces.map(
-              (item) => {
-                const selected =
-                  space ===
-                  item.name;
+            {spaces.map((item) => {
+              const selected =
+                space === item.name;
 
-                return (
-                  <button
-                    key={
+              return (
+                <button
+                  key={item.name}
+                  type="button"
+                  onClick={() =>
+                    setSpace(
                       item.name
-                    }
-                    type="button"
-                    onClick={() =>
-                      setSpace(
-                        item.name
-                      )
-                    }
-                    className="overflow-hidden rounded-[26px] bg-white text-left"
+                    )
+                  }
+                  className="overflow-hidden rounded-[26px] bg-white text-left"
+                >
+
+                  <div className="relative h-[155px]">
+
+                    <Image
+                      src={item.image}
+                      alt={item.name}
+                      fill
+                      className="object-cover"
+                    />
+
+                  </div>
+
+                  <div
+                    className={`flex items-center justify-between px-5 py-4 ${
+                      selected
+                        ? "bg-[#BFFF00]"
+                        : "bg-white"
+                    }`}
                   >
 
-                    <div className="relative h-[155px]">
+                    <div>
 
-                      <Image
-                        src={
-                          item.image
-                        }
-                        alt={
-                          item.name
-                        }
-                        fill
-                        className="object-cover"
-                      />
+                      <p className="font-bold text-[#202020]">
+                        {item.name}
+                      </p>
+
+                      <p className="mt-1 text-xs text-[#202020]/50">
+                        {item.description}
+                      </p>
 
                     </div>
 
-                    <div
-                      className={`flex items-center justify-between px-5 py-4 ${
-                        selected
-                          ? "bg-[#BFFF00]"
-                          : "bg-white"
-                      }`}
-                    >
-
-                      <div>
-
-                        <p className="font-bold text-[#202020]">
-                          {
-                            item.name
-                          }
-                        </p>
-
-                        <p className="mt-1 text-xs text-[#202020]/50">
-                          {
-                            item.description
-                          }
-                        </p>
-
-                      </div>
-
-                      <div className="rounded-full bg-white/75 px-3 py-2 text-xs font-semibold text-[#202020]">
-                        👥{" "}
-                        {
-                          item.people
-                        }
-                      </div>
-
+                    <div className="rounded-full bg-white/75 px-3 py-2 text-xs font-semibold text-[#202020]">
+                      👥 {item.people}
                     </div>
 
-                  </button>
-                );
-              }
-            )}
+                  </div>
+
+                </button>
+              );
+            })}
 
           </div>
 
@@ -1249,13 +1098,9 @@ export default function Home() {
         <div className="px-6 pt-4 pb-[max(2rem,env(safe-area-inset-bottom))]">
 
           <BottomButton
-            disabled={
-              !space
-            }
+            disabled={!space}
             onClick={() =>
-              setStep(
-                "landscape"
-              )
+              setStep("landscape")
             }
           >
             Enter Space
@@ -1266,10 +1111,6 @@ export default function Home() {
       </MobileFrame>
     );
   }
-
-  /* =====================================================
-     TEMP SPACE
-  ===================================================== */
 
   return (
     <div className="flex min-h-dvh items-center justify-center bg-[#202020]">
@@ -1285,17 +1126,13 @@ export default function Home() {
         </h1>
 
         <p className="mt-4 text-sm text-white/50">
-          {language} ·{" "}
-          {level} ·{" "}
-          {goal}
+          {language} · {level} · {goal}
         </p>
 
         <button
           type="button"
           onClick={() =>
-            setStep(
-              "space"
-            )
+            setStep("space")
           }
           className="mt-10 rounded-full bg-[#BFFF00] px-8 py-3 font-bold text-[#202020]"
         >

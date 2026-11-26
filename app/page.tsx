@@ -121,36 +121,47 @@ const spaces: {
   },
 ];
 
+/* 원본 캐릭터 느낌의 파스텔 팔레트 */
 const bodyColors = [
-  { name: "Lime", value: "#CDEB47" },
-  { name: "Mint", value: "#84E4D5" },
-  { name: "Blue", value: "#83C9FF" },
-  { name: "Pink", value: "#F5A8DB" },
-  { name: "Yellow", value: "#F8EB73" },
-  { name: "Lavender", value: "#C9B9FF" },
-  { name: "Peach", value: "#FFBE9B" },
+  { name: "Lime", value: "#C7F238" },
+  { name: "Mint", value: "#74DDD1" },
+  { name: "Blue", value: "#78C0F0" },
+  { name: "Pink", value: "#EE98CF" },
+  { name: "Yellow", value: "#F7E66A" },
+  { name: "Purple", value: "#B8A4F4" },
+  { name: "Peach", value: "#FFB58E" },
 ];
 
 const eyeSuggestions = [
+  "P",
+  "B",
   "の",
   "中",
   "あ",
   "ㅎ",
-  "ก",
-  "ع",
-  "Ω",
+  "丸",
   "ㅁ",
 ];
 
 /* =====================================================
    EYE TEXTURE
+
+   ★ 원본 P/B 눈처럼
+   - 더 굵게
+   - 더 크게
+   - 더 또렷하게
+   - 고해상도
 ===================================================== */
 
 function createEyeTexture(text: string) {
   const canvas = document.createElement("canvas");
 
-  canvas.width = 512;
-  canvas.height = 512;
+  /*
+    기존 512보다 크게 만들어서
+    모바일에서도 덜 흐려지도록 함
+  */
+  canvas.width = 1024;
+  canvas.height = 1024;
 
   const context = canvas.getContext("2d");
 
@@ -169,33 +180,37 @@ function createEyeTexture(text: string) {
   context.textBaseline = "middle";
 
   /*
-    너무 두껍고 스티커처럼 보이지 않게
-    기존보다 글자 굵기와 외곽선을 줄임
+    원본의 P / B처럼
+    꽤 두껍고 존재감 있는 형태
   */
   context.font =
-    '600 285px Arial, "Apple SD Gothic Neo", "Noto Sans", sans-serif';
+    '800 650px Arial, "Arial Black", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif';
 
-  context.fillStyle = "#202020";
+  context.fillStyle = "#171717";
 
   /*
-    아주 얇은 stroke만 넣어서
-    문자 모양은 또렷하게 유지
+    외곽선을 넣어서 글자가
+    얼굴에서 흐릿하지 않게
   */
-  context.strokeStyle = "#202020";
-  context.lineWidth = 5;
+  context.strokeStyle = "#171717";
+  context.lineWidth = 18;
   context.lineJoin = "round";
-  context.miterLimit = 2;
+  context.lineCap = "round";
 
+  /*
+    약간 아래쪽으로 배치
+    글자마다 중심이 위로 뜨는 현상 완화
+  */
   context.strokeText(
     text || " ",
-    256,
-    270
+    512,
+    545
   );
 
   context.fillText(
     text || " ",
-    256,
-    270
+    512,
+    545
   );
 
   const texture =
@@ -204,13 +219,22 @@ function createEyeTexture(text: string) {
   texture.colorSpace =
     THREE.SRGBColorSpace;
 
+  texture.minFilter =
+    THREE.LinearFilter;
+
+  texture.magFilter =
+    THREE.LinearFilter;
+
+  texture.generateMipmaps =
+    true;
+
   texture.needsUpdate = true;
 
   return texture;
 }
 
 /* =====================================================
-   3D EYE
+   EYE
 ===================================================== */
 
 function Eye3D({
@@ -219,11 +243,20 @@ function Eye3D({
   rotation,
 }: {
   text: string;
-  position: [number, number, number];
-  rotation: [number, number, number];
+  position: [
+    number,
+    number,
+    number
+  ];
+  rotation: [
+    number,
+    number,
+    number
+  ];
 }) {
   const texture = useMemo(
-    () => createEyeTexture(text),
+    () =>
+      createEyeTexture(text),
     [text]
   );
 
@@ -241,24 +274,24 @@ function Eye3D({
     <mesh
       position={position}
       rotation={rotation}
-      renderOrder={10}
+      renderOrder={20}
     >
       {/*
-        기존 0.38 → 0.31
-        얼굴에서 눈이 너무 커 보이는 문제 완화
+        기존보다 다시 크게.
+        원본 P/B 비율에 가까움.
       */}
       <planeGeometry
-        args={[0.31, 0.31]}
+        args={[0.36, 0.36]}
       />
 
       <meshBasicMaterial
         map={texture}
         transparent
-        alphaTest={0.015}
+        alphaTest={0.01}
         depthWrite={false}
-        polygonOffset
-        polygonOffsetFactor={-1}
         side={THREE.DoubleSide}
+        polygonOffset
+        polygonOffsetFactor={-2}
       />
     </mesh>
   );
@@ -288,7 +321,9 @@ function CharacterModel({
     OBJLoader,
     "/mbd_character_eyeX.obj",
     (loader) => {
-      loader.setMaterials(materials);
+      loader.setMaterials(
+        materials
+      );
     }
   );
 
@@ -296,63 +331,81 @@ function CharacterModel({
     const cloned =
       object.clone(true);
 
-    cloned.traverse((child) => {
-      if (!(child instanceof THREE.Mesh)) {
-        return;
-      }
-
-      if (Array.isArray(child.material)) {
-        child.material =
-          child.material.map((material) => {
-            const copy =
-              material.clone();
-
-            if (
-              copy.name ===
-              "bodyColor_Green"
-            ) {
-              copy.color.set(
-                bodyColor
-              );
-            }
-
-            return copy;
-          });
-      } else if (child.material) {
-        const copy =
-          child.material.clone();
-
+    cloned.traverse(
+      (child) => {
         if (
-          copy.name ===
-          "bodyColor_Green"
+          !(
+            child instanceof
+            THREE.Mesh
+          )
         ) {
-          copy.color.set(
-            bodyColor
-          );
+          return;
         }
 
-        child.material = copy;
+        if (
+          Array.isArray(
+            child.material
+          )
+        ) {
+          child.material =
+            child.material.map(
+              (material) => {
+                const copy =
+                  material.clone();
+
+                if (
+                  copy.name ===
+                  "bodyColor_Green"
+                ) {
+                  copy.color.set(
+                    bodyColor
+                  );
+                }
+
+                return copy;
+              }
+            );
+        } else if (
+          child.material
+        ) {
+          const copy =
+            child.material.clone();
+
+          if (
+            copy.name ===
+            "bodyColor_Green"
+          ) {
+            copy.color.set(
+              bodyColor
+            );
+          }
+
+          child.material =
+            copy;
+        }
       }
-    });
+    );
 
     return cloned;
-  }, [object, bodyColor]);
+  }, [
+    object,
+    bodyColor,
+  ]);
 
   /*
-    ★ 기준은 캐릭터 기준이 아니라
-      우리가 정면에서 보는 화면 기준
+    ====================================================
+    ★ 화면에서 우리가 보는 기준 ★
 
-    화면 왼쪽  = leftEye
-    화면 오른쪽 = rightEye
+          LEFT        RIGHT
+           눈            눈
+
+    캐릭터 본인 기준이 아님.
+    ====================================================
   */
 
   /*
-    기존보다 눈을 얼굴 중앙으로 아주 조금 모음
-    기존:
-    -27.42 / -27.90
-
-    수정:
-    -27.47 / -27.85
+    원본 캐릭터보다 너무 멀리 벌어져
+    보이지 않도록 살짝 중앙으로 모음.
   */
 
   const viewerLeftEyePosition: [
@@ -360,9 +413,9 @@ function CharacterModel({
     number,
     number
   ] = [
-    -27.47,
-    1.42,
-    -23.715,
+    -27.48,
+    1.425,
+    -23.705,
   ];
 
   const viewerRightEyePosition: [
@@ -370,16 +423,17 @@ function CharacterModel({
     number,
     number
   ] = [
-    -27.85,
-    1.42,
-    -23.715,
+    -27.84,
+    1.425,
+    -23.705,
   ];
 
   /*
-    얼굴 둥근 곡면을 따라가는 느낌
+    얼굴 곡률.
 
-    기존 ±0.18보다 조금 완만하게 해서
-    눈이 옆으로 꺾여 보이는 문제를 줄임
+    기존처럼 너무 많이 꺾으면
+    글자가 얇고 찌그러져 보이기 때문에
+    아주 약하게만 회전.
   */
 
   const viewerLeftEyeRotation: [
@@ -388,7 +442,7 @@ function CharacterModel({
     number
   ] = [
     0,
-    Math.PI - 0.11,
+    Math.PI - 0.07,
     0,
   ];
 
@@ -398,7 +452,7 @@ function CharacterModel({
     number
   ] = [
     0,
-    Math.PI + 0.11,
+    Math.PI + 0.07,
     0,
   ];
 
@@ -406,16 +460,22 @@ function CharacterModel({
     <Center>
       <group
         scale={0.64}
-        position={[0, 0.18, 0]}
+        position={[
+          0,
+          0.18,
+          0,
+        ]}
         rotation={[
           0,
           Math.PI,
           0,
         ]}
       >
-        <primitive object={model} />
+        <primitive
+          object={model}
+        />
 
-        {/* 화면에서 우리가 보는 왼쪽 눈 */}
+        {/* 화면에서 왼쪽 */}
         <Eye3D
           text={leftEye}
           position={
@@ -426,7 +486,7 @@ function CharacterModel({
           }
         />
 
-        {/* 화면에서 우리가 보는 오른쪽 눈 */}
+        {/* 화면에서 오른쪽 */}
         <Eye3D
           text={rightEye}
           position={
@@ -446,79 +506,88 @@ function CharacterModel({
 ===================================================== */
 
 export default function Home() {
-  const [step, setStep] =
-    useState<Step>("start");
+  const [
+    step,
+    setStep,
+  ] =
+    useState<Step>(
+      "start"
+    );
 
   const [
     language,
     setLanguage,
   ] =
-    useState<Language | null>(
-      null
-    );
+    useState<
+      Language | null
+    >(null);
 
   const [
     level,
     setLevel,
   ] =
-    useState<Level | null>(
-      null
-    );
+    useState<
+      Level | null
+    >(null);
 
   const [
     goal,
     setGoal,
   ] =
-    useState<Goal | null>(
-      null
-    );
+    useState<
+      Goal | null
+    >(null);
 
   const [
     space,
     setSpace,
   ] =
-    useState<Space | null>(
-      null
-    );
+    useState<
+      Space | null
+    >(null);
 
   const [
     bodyColor,
     setBodyColor,
   ] =
-    useState("#CDEB47");
+    useState(
+      "#C7F238"
+    );
 
   /*
-    화면 기준
+    화면 기준 Left / Right
   */
 
   const [
     leftEye,
     setLeftEye,
   ] =
-    useState("の");
+    useState("P");
 
   const [
     rightEye,
     setRightEye,
   ] =
-    useState("中");
+    useState("B");
 
   const [
     characterTab,
     setCharacterTab,
-  ] = useState<
-    "color" | "eyes"
-  >("color");
+  ] =
+    useState<
+      "color" | "eyes"
+    >("color");
 
   const [
     eyeTarget,
     setEyeTarget,
-  ] = useState<
-    "left" | "right"
-  >("left");
+  ] =
+    useState<
+      "left" | "right"
+    >("left");
 
   /* =====================================================
-     COMMON UI
+     COMMON
   ===================================================== */
 
   const MobileFrame = ({
@@ -546,21 +615,19 @@ export default function Home() {
     <button
       type="button"
       onClick={onClick}
-      aria-label="Go back"
+      aria-label="Back"
       className="mb-6 flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-white/70 shadow-[0_10px_30px_rgba(0,0,0,0.08)] backdrop-blur-xl transition active:scale-95"
       style={{
         background:
           "linear-gradient(135deg, rgba(255,255,255,0.82), rgba(255,255,255,0.35))",
       }}
     >
-
       <svg
         width="24"
         height="24"
         viewBox="0 0 24 24"
         fill="none"
       >
-
         <path
           d="M14.5 6.5L9 12L14.5 17.5"
           stroke="#202020"
@@ -568,9 +635,7 @@ export default function Home() {
           strokeLinecap="round"
           strokeLinejoin="round"
         />
-
       </svg>
-
     </button>
   );
 
@@ -602,7 +667,9 @@ export default function Home() {
      START
   ===================================================== */
 
-  if (step === "start") {
+  if (
+    step === "start"
+  ) {
     return (
       <MobileFrame>
 
@@ -610,7 +677,7 @@ export default function Home() {
 
           <Image
             src="/plabla-logo-transparent.svg"
-            alt="PlaBla Logo"
+            alt="PlaBla"
             width={280}
             height={180}
             priority
@@ -623,7 +690,9 @@ export default function Home() {
 
           <BottomButton
             onClick={() =>
-              setStep("language")
+              setStep(
+                "language"
+              )
             }
           >
             Start
@@ -639,7 +708,10 @@ export default function Home() {
      LANGUAGE
   ===================================================== */
 
-  if (step === "language") {
+  if (
+    step ===
+    "language"
+  ) {
     return (
       <MobileFrame>
 
@@ -647,7 +719,9 @@ export default function Home() {
 
           <BackButton
             onClick={() =>
-              setStep("start")
+              setStep(
+                "start"
+              )
             }
           />
 
@@ -680,7 +754,7 @@ export default function Home() {
                         item.name
                       )
                     }
-                    className={`flex h-[68px] shrink-0 items-center gap-4 rounded-[22px] border-2 px-4 text-left transition ${
+                    className={`flex h-[68px] shrink-0 items-center gap-4 rounded-[22px] border-2 px-4 text-left ${
                       selected
                         ? "border-[#BFFF00] bg-[#F7FFE5]"
                         : "border-transparent bg-white"
@@ -712,7 +786,7 @@ export default function Home() {
 
           </div>
 
-          <div className="h-6 shrink-0" />
+          <div className="h-6" />
 
         </div>
 
@@ -723,7 +797,9 @@ export default function Home() {
               !language
             }
             onClick={() =>
-              setStep("info")
+              setStep(
+                "info"
+              )
             }
           >
             Next
@@ -739,7 +815,9 @@ export default function Home() {
      INFO
   ===================================================== */
 
-  if (step === "info") {
+  if (
+    step === "info"
+  ) {
     return (
       <MobileFrame>
 
@@ -765,7 +843,7 @@ export default function Home() {
 
           <section className="mb-8">
 
-            <h2 className="mb-3 font-bold text-[#202020]">
+            <h2 className="mb-3 font-bold">
               Your level
             </h2>
 
@@ -798,7 +876,7 @@ export default function Home() {
 
           <section>
 
-            <h2 className="mb-3 font-bold text-[#202020]">
+            <h2 className="mb-3 font-bold">
               Learning goal
             </h2>
 
@@ -857,7 +935,10 @@ export default function Home() {
      CHARACTER
   ===================================================== */
 
-  if (step === "character") {
+  if (
+    step ===
+    "character"
+  ) {
     return (
       <MobileFrame>
 
@@ -877,11 +958,9 @@ export default function Home() {
             Create your PlaBla character.
           </p>
 
-          {/* ======================
-              CHARACTER PREVIEW
-          ====================== */}
+          {/* CHARACTER */}
 
-          <div className="relative mt-5 h-[290px] w-full overflow-hidden rounded-[30px] bg-white">
+          <div className="relative mt-5 h-[300px] w-full overflow-hidden rounded-[30px] bg-white">
 
             <Canvas
               camera={{
@@ -891,6 +970,9 @@ export default function Home() {
                   3.8,
                 ],
                 fov: 32,
+              }}
+              gl={{
+                antialias: true,
               }}
             >
 
@@ -904,7 +986,7 @@ export default function Home() {
                   6,
                   6,
                 ]}
-                intensity={2.5}
+                intensity={2.6}
               />
 
               <directionalLight
@@ -913,7 +995,7 @@ export default function Home() {
                   2,
                   3,
                 ]}
-                intensity={1.2}
+                intensity={1.3}
               />
 
               <CharacterModel
@@ -928,29 +1010,35 @@ export default function Home() {
                 }
               />
 
-              {/*
-                좌우로만 회전
-                뒤쪽까지 완전히 돌아가지 못하게 제한
-              */}
+              {/* 좌우 회전만 */}
 
               <OrbitControls
-                enablePan={false}
-                enableZoom={false}
+                enablePan={
+                  false
+                }
+                enableZoom={
+                  false
+                }
+                enableRotate={
+                  true
+                }
 
                 minPolarAngle={
-                  Math.PI / 2
+                  Math.PI /
+                  2
                 }
 
                 maxPolarAngle={
-                  Math.PI / 2
+                  Math.PI /
+                  2
                 }
 
                 minAzimuthAngle={
-                  -0.8
+                  -0.78
                 }
 
                 maxAzimuthAngle={
-                  0.8
+                  0.78
                 }
 
                 target={[
@@ -968,9 +1056,7 @@ export default function Home() {
             Drag left or right to rotate
           </p>
 
-          {/* ======================
-              TABS
-          ====================== */}
+          {/* TABS */}
 
           <div className="mt-5 grid grid-cols-2 rounded-full bg-[#EEEEEE] p-1">
 
@@ -981,7 +1067,7 @@ export default function Home() {
                   "color"
                 )
               }
-              className={`rounded-full py-2.5 font-semibold transition ${
+              className={`rounded-full py-2.5 font-semibold ${
                 characterTab ===
                 "color"
                   ? "bg-white text-[#202020] shadow-sm"
@@ -998,7 +1084,7 @@ export default function Home() {
                   "eyes"
                 )
               }
-              className={`rounded-full py-2.5 font-semibold transition ${
+              className={`rounded-full py-2.5 font-semibold ${
                 characterTab ===
                 "eyes"
                   ? "bg-white text-[#202020] shadow-sm"
@@ -1010,11 +1096,10 @@ export default function Home() {
 
           </div>
 
-          {/* ======================
-              COLOR
-          ====================== */}
+          {/* COLOR */}
 
-          {characterTab === "color" && (
+          {characterTab ===
+            "color" && (
             <div className="mt-6">
 
               <p className="mb-4 font-bold text-[#202020]">
@@ -1024,7 +1109,9 @@ export default function Home() {
               <div className="flex flex-wrap gap-4 px-1 py-1">
 
                 {bodyColors.map(
-                  (color) => (
+                  (
+                    color
+                  ) => (
                     <button
                       key={
                         color.value
@@ -1038,7 +1125,7 @@ export default function Home() {
                           color.value
                         )
                       }
-                      className={`h-12 w-12 shrink-0 rounded-full transition ${
+                      className={`h-12 w-12 shrink-0 rounded-full ${
                         bodyColor ===
                         color.value
                           ? "ring-2 ring-[#202020] ring-offset-2 ring-offset-[#F8F8F8]"
@@ -1057,22 +1144,21 @@ export default function Home() {
             </div>
           )}
 
-          {/* ======================
-              EYES
-          ====================== */}
+          {/* EYES */}
 
-          {characterTab === "eyes" && (
+          {characterTab ===
+            "eyes" && (
             <div className="mt-6">
 
               <p className="mb-1 font-bold text-[#202020]">
                 Eyes
               </p>
 
-              <p className="mb-5 text-xs leading-5 text-[#202020]/40">
+              <p className="mb-5 text-xs text-[#202020]/40">
                 Left and right are based on what you see on the screen.
               </p>
 
-              {/* 선택할 눈 */}
+              {/* TARGET */}
 
               <div className="mb-4 grid grid-cols-2 rounded-[20px] bg-[#ECECEC] p-1">
 
@@ -1083,7 +1169,7 @@ export default function Home() {
                       "left"
                     )
                   }
-                  className={`rounded-[17px] py-2.5 text-sm font-semibold transition ${
+                  className={`rounded-[17px] py-2.5 text-sm font-semibold ${
                     eyeTarget ===
                     "left"
                       ? "bg-white text-[#202020] shadow-sm"
@@ -1100,7 +1186,7 @@ export default function Home() {
                       "right"
                     )
                   }
-                  className={`rounded-[17px] py-2.5 text-sm font-semibold transition ${
+                  className={`rounded-[17px] py-2.5 text-sm font-semibold ${
                     eyeTarget ===
                     "right"
                       ? "bg-white text-[#202020] shadow-sm"
@@ -1114,11 +1200,9 @@ export default function Home() {
 
               <div className="grid grid-cols-2 gap-3">
 
-                {/* LEFT */}
-
                 <div>
 
-                  <label className="mb-2 block text-sm font-semibold text-[#202020]">
+                  <label className="mb-2 block text-sm font-semibold">
                     Left
                   </label>
 
@@ -1143,14 +1227,15 @@ export default function Home() {
 
                       setLeftEye(
                         value
-                          .slice(-1)
-                          .join("")
+                          .slice(
+                            -1
+                          )
+                          .join(
+                            ""
+                          )
                       );
                     }}
-                    placeholder="の"
-                    inputMode="text"
-                    autoComplete="off"
-                    className={`h-16 w-full rounded-[20px] border-2 bg-white text-center text-2xl text-[#202020] outline-none transition ${
+                    className={`h-16 w-full rounded-[20px] border-2 bg-white text-center text-2xl font-bold outline-none ${
                       eyeTarget ===
                       "left"
                         ? "border-[#BFFF00]"
@@ -1160,11 +1245,9 @@ export default function Home() {
 
                 </div>
 
-                {/* RIGHT */}
-
                 <div>
 
-                  <label className="mb-2 block text-sm font-semibold text-[#202020]">
+                  <label className="mb-2 block text-sm font-semibold">
                     Right
                   </label>
 
@@ -1189,14 +1272,15 @@ export default function Home() {
 
                       setRightEye(
                         value
-                          .slice(-1)
-                          .join("")
+                          .slice(
+                            -1
+                          )
+                          .join(
+                            ""
+                          )
                       );
                     }}
-                    placeholder="中"
-                    inputMode="text"
-                    autoComplete="off"
-                    className={`h-16 w-full rounded-[20px] border-2 bg-white text-center text-2xl text-[#202020] outline-none transition ${
+                    className={`h-16 w-full rounded-[20px] border-2 bg-white text-center text-2xl font-bold outline-none ${
                       eyeTarget ===
                       "right"
                         ? "border-[#BFFF00]"
@@ -1208,16 +1292,16 @@ export default function Home() {
 
               </div>
 
-              {/* SUGGESTION */}
-
-              <p className="mb-3 mt-6 text-sm font-semibold text-[#202020]">
+              <p className="mb-3 mt-6 text-sm font-semibold">
                 Suggestions
               </p>
 
               <div className="grid grid-cols-4 gap-2">
 
                 {eyeSuggestions.map(
-                  (eye) => (
+                  (
+                    eye
+                  ) => (
                     <button
                       key={eye}
                       type="button"
@@ -1235,7 +1319,7 @@ export default function Home() {
                           );
                         }
                       }}
-                      className="flex h-14 items-center justify-center rounded-[18px] bg-white text-xl text-[#202020] transition active:scale-95"
+                      className="flex h-14 items-center justify-center rounded-[18px] bg-white text-xl font-bold active:scale-95"
                     >
                       {eye}
                     </button>
@@ -1247,15 +1331,13 @@ export default function Home() {
             </div>
           )}
 
-          {/* ======================
-              CONTINUE
-          ====================== */}
-
           <div className="mt-8 pb-[max(1rem,env(safe-area-inset-bottom))]">
 
             <BottomButton
               onClick={() =>
-                setStep("space")
+                setStep(
+                  "space"
+                )
               }
             >
               Continue
@@ -1273,7 +1355,9 @@ export default function Home() {
      SPACE
   ===================================================== */
 
-  if (step === "space") {
+  if (
+    step === "space"
+  ) {
     return (
       <MobileFrame>
 
@@ -1287,7 +1371,7 @@ export default function Home() {
             }
           />
 
-          <h1 className="mb-2 text-3xl font-bold text-[#202020]">
+          <h1 className="mb-2 text-3xl font-bold">
             What would you
             <br />
             like to do?
@@ -1335,7 +1419,7 @@ export default function Home() {
                     </div>
 
                     <div
-                      className={`flex items-center justify-between px-5 py-4 transition ${
+                      className={`flex items-center justify-between px-5 py-4 ${
                         selected
                           ? "bg-[#BFFF00]"
                           : "bg-white"
@@ -1344,7 +1428,7 @@ export default function Home() {
 
                       <div>
 
-                        <p className="font-bold text-[#202020]">
+                        <p className="font-bold">
                           {
                             item.name
                           }
@@ -1358,7 +1442,7 @@ export default function Home() {
 
                       </div>
 
-                      <div className="rounded-full bg-white/75 px-3 py-2 text-xs font-semibold text-[#202020]">
+                      <div className="rounded-full bg-white/75 px-3 py-2 text-xs font-semibold">
                         👥{" "}
                         {
                           item.people
@@ -1427,7 +1511,7 @@ export default function Home() {
               "space"
             )
           }
-          className="mt-10 rounded-full bg-[#BFFF00] px-8 py-3 font-bold text-[#202020]"
+          className="mt-10 rounded-full bg-[#BFFF00] px-8 py-3 font-bold"
         >
           Back
         </button>

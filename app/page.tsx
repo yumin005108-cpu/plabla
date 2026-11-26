@@ -61,8 +61,14 @@ type CharacterTab = "color" | "eyes";
 
 type EyeTarget = "left" | "right";
 
+type CharacterReturnStep =
+  | "info"
+  | "home"
+  | "profile"
+  | "settings";
+
 /* =====================================================
-   TRANSLATION
+   TRANSLATIONS
 ===================================================== */
 
 const translations = {
@@ -83,18 +89,20 @@ const translations = {
     color: "Color",
     eyes: "Eyes",
     bodyColor: "Body color",
+
     leftEye: "Left eye",
     rightEye: "Right eye",
     suggestions: "Suggestions",
 
     next: "Next",
     continue: "Continue",
+    save: "Save",
+    cancel: "Cancel",
 
     hi: "Hi",
     readyToTalk: "Ready to talk?",
 
     learning: "Learning",
-    goal: "Goal",
 
     jumpIntoSpace: "Jump into a space",
     seeAll: "See all",
@@ -122,8 +130,6 @@ const translations = {
     displayName: "Display name",
     editName: "Edit name",
     edit: "Edit",
-    save: "Save",
-    cancel: "Cancel",
 
     manageAccount: "Manage account",
 
@@ -147,11 +153,6 @@ const translations = {
 
     resetAppData: "Reset app data",
     resetAppDataDesc: "Erase PlaBla settings on this device",
-
-    home: "Home",
-    spaces: "Spaces",
-    profile: "Profile",
-    settingsTab: "Settings",
 
     customColor: "Custom color",
     customColorSub: "Preview it on your character first.",
@@ -178,18 +179,20 @@ const translations = {
     color: "컬러",
     eyes: "눈",
     bodyColor: "바디 컬러",
+
     leftEye: "왼쪽 눈",
     rightEye: "오른쪽 눈",
     suggestions: "추천",
 
     next: "다음",
     continue: "계속하기",
+    save: "저장",
+    cancel: "취소",
 
     hi: "안녕하세요",
     readyToTalk: "대화를 시작해볼까요?",
 
     learning: "학습 중",
-    goal: "목표",
 
     jumpIntoSpace: "바로 참여하기",
     seeAll: "전체 보기",
@@ -217,8 +220,6 @@ const translations = {
     displayName: "프로필 이름",
     editName: "이름 수정",
     edit: "수정",
-    save: "저장",
-    cancel: "취소",
 
     manageAccount: "계정 관리",
 
@@ -243,11 +244,6 @@ const translations = {
     resetAppData: "앱 데이터 초기화",
     resetAppDataDesc: "이 기기에 저장된 PlaBla 설정 삭제",
 
-    home: "홈",
-    spaces: "공간",
-    profile: "프로필",
-    settingsTab: "설정",
-
     customColor: "사용자 지정 컬러",
     customColorSub: "캐릭터에 적용된 모습을 먼저 확인해보세요.",
     select: "선택",
@@ -266,44 +262,98 @@ const languages: {
   symbol: string;
   ko: string;
 }[] = [
-  { name: "Korean", symbol: "한", ko: "한국어" },
-  { name: "English", symbol: "A", ko: "영어" },
-  { name: "Japanese", symbol: "あ", ko: "일본어" },
-  { name: "Chinese", symbol: "中", ko: "중국어" },
-  { name: "Spanish", symbol: "Ñ", ko: "스페인어" },
-  { name: "French", symbol: "É", ko: "프랑스어" },
+  {
+    name: "Korean",
+    symbol: "한",
+    ko: "한국어",
+  },
+  {
+    name: "English",
+    symbol: "A",
+    ko: "영어",
+  },
+  {
+    name: "Japanese",
+    symbol: "あ",
+    ko: "일본어",
+  },
+  {
+    name: "Chinese",
+    symbol: "中",
+    ko: "중국어",
+  },
+  {
+    name: "Spanish",
+    symbol: "Ñ",
+    ko: "스페인어",
+  },
+  {
+    name: "French",
+    symbol: "É",
+    ko: "프랑스어",
+  },
 ];
 
 const levels: {
   value: Level;
   ko: string;
 }[] = [
-  { value: "Beginner", ko: "초급" },
-  { value: "Intermediate", ko: "중급" },
-  { value: "Advanced", ko: "고급" },
+  {
+    value: "Beginner",
+    ko: "초급",
+  },
+  {
+    value: "Intermediate",
+    ko: "중급",
+  },
+  {
+    value: "Advanced",
+    ko: "고급",
+  },
 ];
 
 const goals: {
   value: Goal;
   ko: string;
 }[] = [
-  { value: "Conversation", ko: "회화" },
-  { value: "Travel", ko: "여행" },
-  { value: "Study", ko: "학습" },
-  { value: "Culture", ko: "문화" },
+  {
+    value: "Conversation",
+    ko: "회화",
+  },
+  {
+    value: "Travel",
+    ko: "여행",
+  },
+  {
+    value: "Study",
+    ko: "학습",
+  },
+  {
+    value: "Culture",
+    ko: "문화",
+  },
 ];
 
 const bodyColors = [
-  { name: "Lime", value: "#C7F238" },
-  { name: "Mint", value: "#74DDD1" },
-  { name: "Blue", value: "#78C0F0" },
-  { name: "Pink", value: "#EE98CF" },
-  { name: "Yellow", value: "#F7E66A" },
-  { name: "Purple", value: "#B8A4F4" },
-  { name: "Peach", value: "#FFB58E" },
+  "#C7F238",
+  "#74DDD1",
+  "#78C0F0",
+  "#EE98CF",
+  "#F7E66A",
+  "#B8A4F4",
+  "#FFB58E",
 ];
 
-const eyeSuggestions = ["P", "B", "の", "中", "あ", "ㅎ", "Ω", "丸"];
+const eyeSuggestions = [
+  "P",
+  "B",
+  "の",
+  "中",
+  "あ",
+  "ㅎ",
+  "Ω",
+  "丸",
+];
 
 const spaces: {
   name: Space;
@@ -364,12 +414,246 @@ const spaces: {
 ];
 
 /* =====================================================
-   COLOR
+   STABLE UI COMPONENTS
+   ★ Home 밖에 위치해야 함
 ===================================================== */
 
-function hsvToHex(h: number, s: number, v: number) {
+function MobileFrame({
+  children,
+}: {
+  children: ReactNode;
+}) {
+  return (
+    <div className="flex min-h-dvh items-center justify-center bg-[#F2F2F2]">
+      <main className="relative flex h-dvh w-full max-w-[430px] flex-col overflow-hidden bg-[#F8F8F8]">
+        {children}
+      </main>
+    </div>
+  );
+}
+
+function Headline({
+  children,
+  appLanguage,
+  className = "",
+  light = false,
+}: {
+  children: ReactNode;
+  appLanguage: AppLanguage;
+  className?: string;
+  light?: boolean;
+}) {
+  if (appLanguage === "ko") {
+    return (
+      <h1
+        className={`text-[35px] leading-[1.28] tracking-[-0.025em] ${
+          light
+            ? "text-white"
+            : "text-[#202020]"
+        } ${className}`}
+        style={{
+          fontFamily:
+            '"SOYOMaple", sans-serif',
+          fontWeight: 700,
+        }}
+      >
+        {children}
+      </h1>
+    );
+  }
+
+  return (
+    <h1
+      className={`font-fredoka text-[35px] font-medium leading-[1.1] tracking-[-0.01em] ${
+        light
+          ? "text-white"
+          : "text-[#202020]"
+      } ${className}`}
+    >
+      {children}
+    </h1>
+  );
+}
+
+function BackButton({
+  onClick,
+}: {
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="mb-6 flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-white shadow-[0_10px_30px_rgba(0,0,0,0.08)]"
+    >
+      <svg
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+      >
+        <path
+          d="M14.5 6.5L9 12L14.5 17.5"
+          stroke="#202020"
+          strokeWidth="2.6"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    </button>
+  );
+}
+
+function BottomButton({
+  children,
+  disabled,
+  onClick,
+}: {
+  children: ReactNode;
+  disabled?: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      disabled={disabled}
+      onClick={onClick}
+      className={`font-pretendard h-14 w-full rounded-full text-[17px] font-semibold ${
+        disabled
+          ? "bg-[#E5E5E5] text-[#999999]"
+          : "bg-[#BFFF00] text-[#202020]"
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
+function Toggle({
+  value,
+  onChange,
+}: {
+  value: boolean;
+  onChange: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onChange}
+      className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${
+        value
+          ? "bg-[#BFFF00]"
+          : "bg-[#D7D7D7]"
+      }`}
+    >
+      <span
+        className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow transition-all ${
+          value
+            ? "left-6"
+            : "left-1"
+        }`}
+      />
+    </button>
+  );
+}
+
+function BottomNav({
+  current,
+  appLanguage,
+  onChange,
+}: {
+  current: AppTab;
+  appLanguage: AppLanguage;
+  onChange: (tab: AppTab) => void;
+}) {
+  const tabs = [
+    {
+      key: "home" as const,
+      en: "Home",
+      ko: "홈",
+      icon: "⌂",
+    },
+    {
+      key: "space" as const,
+      en: "Spaces",
+      ko: "공간",
+      icon: "▦",
+    },
+    {
+      key: "profile" as const,
+      en: "Profile",
+      ko: "프로필",
+      icon: "○",
+    },
+    {
+      key: "settings" as const,
+      en: "Settings",
+      ko: "설정",
+      icon: "⚙",
+    },
+  ];
+
+  return (
+    <div className="border-t border-black/[0.05] bg-white px-3 pb-[max(8px,env(safe-area-inset-bottom))] pt-2">
+      <div className="grid grid-cols-4">
+        {tabs.map((item) => {
+          const active =
+            current === item.key;
+
+          return (
+            <button
+              key={item.key}
+              type="button"
+              onClick={() =>
+                onChange(item.key)
+              }
+              className={`font-pretendard flex flex-col items-center gap-1 ${
+                active
+                  ? "text-[#202020]"
+                  : "text-[#202020]/30"
+              }`}
+            >
+              <div
+                className={`flex h-8 w-11 items-center justify-center rounded-full text-[19px] ${
+                  active
+                    ? "bg-[#BFFF00]"
+                    : ""
+                }`}
+              >
+                {item.icon}
+              </div>
+
+              <span className="text-[10px] font-semibold">
+                {appLanguage === "ko"
+                  ? item.ko
+                  : item.en}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* =====================================================
+   COLOR HELPERS
+===================================================== */
+
+function hsvToHex(
+  h: number,
+  s: number,
+  v: number
+) {
   const c = v * s;
-  const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+
+  const x =
+    c *
+    (1 -
+      Math.abs(
+        ((h / 60) % 2) - 1
+      ));
+
   const m = v - c;
 
   let r = 0;
@@ -396,104 +680,243 @@ function hsvToHex(h: number, s: number, v: number) {
     b = x;
   }
 
-  const toHex = (value: number) =>
-    Math.round((value + m) * 255)
+  const toHex = (
+    value: number
+  ) =>
+    Math.round(
+      (value + m) * 255
+    )
       .toString(16)
       .padStart(2, "0");
 
-  return ("#" + toHex(r) + toHex(g) + toHex(b)).toUpperCase();
+  return (
+    "#" +
+    toHex(r) +
+    toHex(g) +
+    toHex(b)
+  ).toUpperCase();
 }
 
-function hueToHex(hue: number) {
-  return hsvToHex(hue, 1, 1);
+function hueToHex(
+  hue: number
+) {
+  return hsvToHex(
+    hue,
+    1,
+    1
+  );
 }
 
-function hexToHsv(hex: string) {
-  const clean = hex.replace("#", "");
+function hexToHsv(
+  hex: string
+) {
+  const clean =
+    hex.replace("#", "");
 
-  const r = parseInt(clean.slice(0, 2), 16) / 255;
-  const g = parseInt(clean.slice(2, 4), 16) / 255;
-  const b = parseInt(clean.slice(4, 6), 16) / 255;
+  const r =
+    parseInt(
+      clean.slice(0, 2),
+      16
+    ) / 255;
 
-  const max = Math.max(r, g, b);
-  const min = Math.min(r, g, b);
-  const delta = max - min;
+  const g =
+    parseInt(
+      clean.slice(2, 4),
+      16
+    ) / 255;
+
+  const b =
+    parseInt(
+      clean.slice(4, 6),
+      16
+    ) / 255;
+
+  const max =
+    Math.max(
+      r,
+      g,
+      b
+    );
+
+  const min =
+    Math.min(
+      r,
+      g,
+      b
+    );
+
+  const delta =
+    max - min;
 
   let h = 0;
 
   if (delta !== 0) {
     if (max === r) {
-      h = 60 * (((g - b) / delta) % 6);
-    } else if (max === g) {
-      h = 60 * ((b - r) / delta + 2);
+      h =
+        60 *
+        (((g - b) /
+          delta) %
+          6);
+    } else if (
+      max === g
+    ) {
+      h =
+        60 *
+        ((b - r) /
+          delta +
+          2);
     } else {
-      h = 60 * ((r - g) / delta + 4);
+      h =
+        60 *
+        ((r - g) /
+          delta +
+          4);
     }
   }
 
-  if (h < 0) h += 360;
+  if (h < 0) {
+    h += 360;
+  }
 
   return {
     h,
-    s: max === 0 ? 0 : delta / max,
+    s:
+      max === 0
+        ? 0
+        : delta / max,
     v: max,
   };
 }
 
 /* =====================================================
-   EYE
+   EYE TEXTURE
 ===================================================== */
 
-function createEyeTexture(text: string) {
-  const canvas = document.createElement("canvas");
+function createEyeTexture(
+  text: string
+) {
+  const canvas =
+    document.createElement(
+      "canvas"
+    );
 
   canvas.width = 1024;
   canvas.height = 1024;
 
-  const ctx = canvas.getContext("2d");
+  const ctx =
+    canvas.getContext(
+      "2d"
+    );
 
-  if (!ctx) return null;
+  if (!ctx) {
+    return null;
+  }
 
-  ctx.clearRect(0, 0, 1024, 1024);
+  ctx.clearRect(
+    0,
+    0,
+    1024,
+    1024
+  );
 
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.lineJoin = "round";
-  ctx.lineCap = "round";
+  ctx.textAlign =
+    "center";
 
-  const isLatin = /^[A-Za-z0-9]$/.test(text);
-  const isJapanese = /[\u3040-\u30ff]/.test(text);
-  const isChinese = /[\u3400-\u9fff]/.test(text);
-  const isKorean = /[\uac00-\ud7af\u3130-\u318f]/.test(text);
+  ctx.textBaseline =
+    "middle";
+
+  ctx.lineJoin =
+    "round";
+
+  ctx.lineCap =
+    "round";
+
+  const isLatin =
+    /^[A-Za-z0-9]$/.test(
+      text
+    );
+
+  const isJapanese =
+    /[\u3040-\u30ff]/.test(
+      text
+    );
+
+  const isChinese =
+    /[\u3400-\u9fff]/.test(
+      text
+    );
+
+  const isKorean =
+    /[\uac00-\ud7af\u3130-\u318f]/.test(
+      text
+    );
 
   let fontSize = 590;
 
-  if (isLatin) fontSize = 610;
-  if (isJapanese) fontSize = 580;
-  if (isChinese) fontSize = 545;
-  if (isKorean) fontSize = 565;
+  if (isLatin) {
+    fontSize = 610;
+  }
+
+  if (isJapanese) {
+    fontSize = 580;
+  }
+
+  if (isChinese) {
+    fontSize = 545;
+  }
+
+  if (isKorean) {
+    fontSize = 565;
+  }
 
   ctx.font =
     `650 ${fontSize}px ` +
-    `"Pretendard Variable", Pretendard, Arial, sans-serif`;
+    `"Pretendard Variable", ` +
+    `Pretendard, Arial, sans-serif`;
 
-  ctx.fillStyle = "#272727";
-  ctx.strokeStyle = "#272727";
+  ctx.fillStyle =
+    "#272727";
+
+  ctx.strokeStyle =
+    "#272727";
 
   ctx.lineWidth = 4;
 
-  ctx.strokeText(text || " ", 512, 530);
-  ctx.fillText(text || " ", 512, 530);
+  ctx.strokeText(
+    text || " ",
+    512,
+    530
+  );
 
-  const texture = new THREE.CanvasTexture(canvas);
+  ctx.fillText(
+    text || " ",
+    512,
+    530
+  );
 
-  texture.colorSpace = THREE.SRGBColorSpace;
-  texture.minFilter = THREE.LinearFilter;
-  texture.magFilter = THREE.LinearFilter;
-  texture.needsUpdate = true;
+  const texture =
+    new THREE.CanvasTexture(
+      canvas
+    );
+
+  texture.colorSpace =
+    THREE.SRGBColorSpace;
+
+  texture.minFilter =
+    THREE.LinearFilter;
+
+  texture.magFilter =
+    THREE.LinearFilter;
+
+  texture.needsUpdate =
+    true;
 
   return texture;
 }
+
+/* =====================================================
+   EYE
+===================================================== */
 
 function Eye3D({
   text,
@@ -501,36 +924,63 @@ function Eye3D({
   rotation,
 }: {
   text: string;
-  position: [number, number, number];
-  rotation: [number, number, number];
+
+  position: [
+    number,
+    number,
+    number
+  ];
+
+  rotation: [
+    number,
+    number,
+    number
+  ];
 }) {
-  const [texture, setTexture] =
-    useState<THREE.CanvasTexture | null>(null);
+  const [
+    texture,
+    setTexture,
+  ] =
+    useState<
+      THREE.CanvasTexture | null
+    >(null);
 
   useEffect(() => {
     let active = true;
 
-    async function makeTexture() {
+    async function build() {
       await document.fonts.ready;
 
-      if (!active) return;
+      if (!active) {
+        return;
+      }
 
-      const next = createEyeTexture(text);
+      const next =
+        createEyeTexture(
+          text
+        );
 
-      setTexture((previous) => {
-        previous?.dispose();
-        return next;
-      });
+      setTexture(
+        (
+          previous
+        ) => {
+          previous?.dispose();
+
+          return next;
+        }
+      );
     }
 
-    makeTexture();
+    build();
 
     return () => {
       active = false;
     };
   }, [text]);
 
-  if (!texture) return null;
+  if (!texture) {
+    return null;
+  }
 
   return (
     <mesh
@@ -538,7 +988,12 @@ function Eye3D({
       rotation={rotation}
       renderOrder={50}
     >
-      <planeGeometry args={[0.35, 0.35]} />
+      <planeGeometry
+        args={[
+          0.35,
+          0.35,
+        ]}
+      />
 
       <meshBasicMaterial
         map={texture}
@@ -553,7 +1008,7 @@ function Eye3D({
 }
 
 /* =====================================================
-   CHARACTER
+   CHARACTER MODEL
 ===================================================== */
 
 function CharacterModel({
@@ -565,74 +1020,150 @@ function CharacterModel({
   leftEye: string;
   rightEye: string;
 }) {
-  const materials = useLoader(
-    MTLLoader,
-    "/mbd_character_eyeX.mtl"
-  );
+  const materials =
+    useLoader(
+      MTLLoader,
+      "/mbd_character_eyeX.mtl"
+    );
 
   materials.preload();
 
-  const object = useLoader(
-    OBJLoader,
-    "/mbd_character_eyeX.obj",
-    (loader) => {
-      loader.setMaterials(materials);
-    }
-  );
-
-  const model = useMemo(() => {
-    const cloned = object.clone(true);
-
-    cloned.traverse((child) => {
-      if (!(child instanceof THREE.Mesh)) return;
-
-      const changeMaterial = (material: THREE.Material) => {
-        const copy = material.clone();
-
-        if (
-          copy.name === "bodyColor_Green" &&
-          "color" in copy
-        ) {
-          (copy as THREE.MeshPhongMaterial).color.set(bodyColor);
-        }
-
-        return copy;
-      };
-
-      if (Array.isArray(child.material)) {
-        child.material = child.material.map(changeMaterial);
-      } else {
-        child.material = changeMaterial(child.material);
+  const object =
+    useLoader(
+      OBJLoader,
+      "/mbd_character_eyeX.obj",
+      (
+        loader
+      ) => {
+        loader.setMaterials(
+          materials
+        );
       }
-    });
+    );
 
-    return cloned;
-  }, [object, bodyColor]);
+  const model =
+    useMemo(() => {
+      const cloned =
+        object.clone(
+          true
+        );
+
+      cloned.traverse(
+        (
+          child
+        ) => {
+          if (
+            !(
+              child instanceof
+              THREE.Mesh
+            )
+          ) {
+            return;
+          }
+
+          const changeMaterial =
+            (
+              material:
+                THREE.Material
+            ) => {
+              const copy =
+                material.clone();
+
+              if (
+                copy.name ===
+                  "bodyColor_Green" &&
+                "color" in copy
+              ) {
+                (
+                  copy as THREE.MeshPhongMaterial
+                ).color.set(
+                  bodyColor
+                );
+              }
+
+              return copy;
+            };
+
+          if (
+            Array.isArray(
+              child.material
+            )
+          ) {
+            child.material =
+              child.material.map(
+                changeMaterial
+              );
+          } else {
+            child.material =
+              changeMaterial(
+                child.material
+              );
+          }
+        }
+      );
+
+      return cloned;
+    }, [
+      object,
+      bodyColor,
+    ]);
 
   return (
     <Center>
       <group
         scale={0.64}
-        position={[0, 0.18, 0]}
-        rotation={[0, Math.PI, 0]}
+        position={[
+          0,
+          0.18,
+          0,
+        ]}
+        rotation={[
+          0,
+          Math.PI,
+          0,
+        ]}
       >
-        <primitive object={model} />
+        <primitive
+          object={model}
+        />
 
         <Eye3D
           text={leftEye}
-          position={[-27.46, 1.43, -23.72]}
-          rotation={[0, Math.PI - 0.03, 0]}
+          position={[
+            -27.46,
+            1.43,
+            -23.72,
+          ]}
+          rotation={[
+            0,
+            Math.PI -
+              0.03,
+            0,
+          ]}
         />
 
         <Eye3D
           text={rightEye}
-          position={[-27.86, 1.43, -23.72]}
-          rotation={[0, Math.PI + 0.03, 0]}
+          position={[
+            -27.86,
+            1.43,
+            -23.72,
+          ]}
+          rotation={[
+            0,
+            Math.PI +
+              0.03,
+            0,
+          ]}
         />
       </group>
     </Center>
   );
 }
+
+/* =====================================================
+   CHARACTER VIEW
+===================================================== */
 
 function CharacterView({
   bodyColor,
@@ -648,40 +1179,83 @@ function CharacterView({
   return (
     <Canvas
       camera={{
-        position: [0, 0.18, 3.8],
+        position: [
+          0,
+          0.18,
+          3.8,
+        ],
         fov: 32,
       }}
       gl={{
-        antialias: true,
+        antialias:
+          true,
       }}
     >
-      <ambientLight intensity={2.45} />
-
-      <directionalLight
-        position={[4, 6, 6]}
-        intensity={2.5}
+      <ambientLight
+        intensity={
+          2.45
+        }
       />
 
       <directionalLight
-        position={[-4, 2, 3]}
-        intensity={1.2}
+        position={[
+          4,
+          6,
+          6,
+        ]}
+        intensity={
+          2.5
+        }
+      />
+
+      <directionalLight
+        position={[
+          -4,
+          2,
+          3,
+        ]}
+        intensity={
+          1.2
+        }
       />
 
       <CharacterModel
-        bodyColor={bodyColor}
-        leftEye={leftEye}
-        rightEye={rightEye}
+        bodyColor={
+          bodyColor
+        }
+        leftEye={
+          leftEye
+        }
+        rightEye={
+          rightEye
+        }
       />
 
       {rotate && (
         <OrbitControls
-          enablePan={false}
-          enableZoom={false}
-          minPolarAngle={Math.PI / 2}
-          maxPolarAngle={Math.PI / 2}
-          minAzimuthAngle={-0.78}
-          maxAzimuthAngle={0.78}
-          target={[0, 0.2, 0]}
+          enablePan={
+            false
+          }
+          enableZoom={
+            false
+          }
+          minPolarAngle={
+            Math.PI / 2
+          }
+          maxPolarAngle={
+            Math.PI / 2
+          }
+          minAzimuthAngle={
+            -0.78
+          }
+          maxAzimuthAngle={
+            0.78
+          }
+          target={[
+            0,
+            0.2,
+            0,
+          ]}
         />
       )}
     </Canvas>
@@ -704,60 +1278,112 @@ function CustomColorPicker({
   leftEye: string;
   rightEye: string;
   appLanguage: AppLanguage;
-  onCancel: () => void;
-  onSelect: (color: string) => void;
+  onCancel:
+    () => void;
+  onSelect:
+    (
+      color: string
+    ) => void;
 }) {
-  const t = translations[appLanguage];
+  const t =
+    translations[
+      appLanguage
+    ];
 
-  const initial = useMemo(
-    () => hexToHsv(initialColor),
-    [initialColor]
-  );
+  const initial =
+    useMemo(
+      () =>
+        hexToHsv(
+          initialColor
+        ),
+      [initialColor]
+    );
 
-  const [hue, setHue] = useState(initial.h);
-  const [saturation, setSaturation] = useState(initial.s);
-  const [brightness, setBrightness] = useState(initial.v);
-
-  const squareRef = useRef<HTMLDivElement>(null);
-  const hueRef = useRef<HTMLDivElement>(null);
-
-  const previewColor = hsvToHex(
+  const [
     hue,
+    setHue,
+  ] =
+    useState(
+      initial.h
+    );
+
+  const [
     saturation,
-    brightness
-  );
+    setSaturation,
+  ] =
+    useState(
+      initial.s
+    );
+
+  const [
+    brightness,
+    setBrightness,
+  ] =
+    useState(
+      initial.v
+    );
+
+  const squareRef =
+    useRef<HTMLDivElement>(
+      null
+    );
+
+  const hueRef =
+    useRef<HTMLDivElement>(
+      null
+    );
+
+  const previewColor =
+    hsvToHex(
+      hue,
+      saturation,
+      brightness
+    );
 
   function updateSquare(
     event:
       | ReactPointerEvent<HTMLDivElement>
       | PointerEvent
   ) {
-    const element = squareRef.current;
+    const element =
+      squareRef.current;
 
-    if (!element) return;
+    if (!element) {
+      return;
+    }
 
-    const rect = element.getBoundingClientRect();
+    const rect =
+      element.getBoundingClientRect();
 
-    const x = Math.max(
-      0,
-      Math.min(
-        rect.width,
-        event.clientX - rect.left
-      )
+    const x =
+      Math.max(
+        0,
+        Math.min(
+          rect.width,
+          event.clientX -
+            rect.left
+        )
+      );
+
+    const y =
+      Math.max(
+        0,
+        Math.min(
+          rect.height,
+          event.clientY -
+            rect.top
+        )
+      );
+
+    setSaturation(
+      x /
+        rect.width
     );
-
-    const y = Math.max(
-      0,
-      Math.min(
-        rect.height,
-        event.clientY - rect.top
-      )
-    );
-
-    setSaturation(x / rect.width);
 
     setBrightness(
-      1 - y / rect.height
+      1 -
+        y /
+          rect.height
     );
   }
 
@@ -766,22 +1392,30 @@ function CustomColorPicker({
       | ReactPointerEvent<HTMLDivElement>
       | PointerEvent
   ) {
-    const element = hueRef.current;
+    const element =
+      hueRef.current;
 
-    if (!element) return;
+    if (!element) {
+      return;
+    }
 
-    const rect = element.getBoundingClientRect();
+    const rect =
+      element.getBoundingClientRect();
 
-    const x = Math.max(
-      0,
-      Math.min(
-        rect.width,
-        event.clientX - rect.left
-      )
-    );
+    const x =
+      Math.max(
+        0,
+        Math.min(
+          rect.width,
+          event.clientX -
+            rect.left
+        )
+      );
 
     setHue(
-      (x / rect.width) * 360
+      (x /
+        rect.width) *
+        360
     );
   }
 
@@ -791,44 +1425,72 @@ function CustomColorPicker({
         <div className="flex items-start justify-between">
           <div>
             <h3 className="font-pretendard text-[19px] font-semibold">
-              {t.customColor}
+              {
+                t.customColor
+              }
             </h3>
 
             <p className="font-pretendard mt-1 text-[13px] text-[#202020]/40">
-              {t.customColorSub}
+              {
+                t.customColorSub
+              }
             </p>
           </div>
 
           <div
             className="h-11 w-11 rounded-full"
             style={{
-              backgroundColor: previewColor,
+              backgroundColor:
+                previewColor,
             }}
           />
         </div>
 
         <div className="mt-4 h-[175px] overflow-hidden rounded-[22px] bg-[#F8F8F8]">
           <CharacterView
-            bodyColor={previewColor}
-            leftEye={leftEye}
-            rightEye={rightEye}
+            bodyColor={
+              previewColor
+            }
+            leftEye={
+              leftEye
+            }
+            rightEye={
+              rightEye
+            }
           />
         </div>
 
         <div
           ref={squareRef}
-          onPointerDown={(event) => {
-            event.currentTarget.setPointerCapture(event.pointerId);
-            updateSquare(event);
+          onPointerDown={(
+            event
+          ) => {
+            event.currentTarget.setPointerCapture(
+              event.pointerId
+            );
+
+            updateSquare(
+              event
+            );
           }}
-          onPointerMove={(event) => {
-            if (event.buttons === 1) {
-              updateSquare(event);
+          onPointerMove={(
+            event
+          ) => {
+            if (
+              event.buttons ===
+              1
+            ) {
+              updateSquare(
+                event
+              );
             }
           }}
           className="relative mt-4 h-[185px] touch-none overflow-hidden rounded-[20px]"
           style={{
-            backgroundColor: hueToHex(hue),
+            backgroundColor:
+              hueToHex(
+                hue
+              ),
           }}
         >
           <div
@@ -850,21 +1512,42 @@ function CustomColorPicker({
           <div
             className="pointer-events-none absolute h-6 w-6 -translate-x-1/2 -translate-y-1/2 rounded-full border-[3px] border-white shadow"
             style={{
-              left: `${saturation * 100}%`,
-              top: `${(1 - brightness) * 100}%`,
+              left: `${
+                saturation *
+                100
+              }%`,
+              top: `${
+                (1 -
+                  brightness) *
+                100
+              }%`,
             }}
           />
         </div>
 
         <div
           ref={hueRef}
-          onPointerDown={(event) => {
-            event.currentTarget.setPointerCapture(event.pointerId);
-            updateHue(event);
+          onPointerDown={(
+            event
+          ) => {
+            event.currentTarget.setPointerCapture(
+              event.pointerId
+            );
+
+            updateHue(
+              event
+            );
           }}
-          onPointerMove={(event) => {
-            if (event.buttons === 1) {
-              updateHue(event);
+          onPointerMove={(
+            event
+          ) => {
+            if (
+              event.buttons ===
+              1
+            ) {
+              updateHue(
+                event
+              );
             }
           }}
           className="relative mt-4 h-7 touch-none rounded-full"
@@ -876,7 +1559,11 @@ function CustomColorPicker({
           <div
             className="pointer-events-none absolute top-1/2 h-9 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-[3px] border-white shadow"
             style={{
-              left: `${(hue / 360) * 100}%`,
+              left: `${
+                (hue /
+                  360) *
+                100
+              }%`,
             }}
           />
         </div>
@@ -885,32 +1572,43 @@ function CustomColorPicker({
           <div
             className="h-10 w-10 rounded-full"
             style={{
-              backgroundColor: previewColor,
+              backgroundColor:
+                previewColor,
             }}
           />
 
           <span className="font-pretendard text-[15px] font-semibold">
-            {previewColor}
+            {
+              previewColor
+            }
           </span>
         </div>
 
         <div className="mt-5 grid grid-cols-2 gap-3">
           <button
             type="button"
-            onClick={onCancel}
+            onClick={
+              onCancel
+            }
             className="font-pretendard h-[52px] rounded-full bg-[#EEEEEE] font-semibold"
           >
-            {t.cancel}
+            {
+              t.cancel
+            }
           </button>
 
           <button
             type="button"
             onClick={() =>
-              onSelect(previewColor)
+              onSelect(
+                previewColor
+              )
             }
             className="font-pretendard h-[52px] rounded-full bg-[#BFFF00] font-semibold"
           >
-            {t.select}
+            {
+              t.select
+            }
           </button>
         </div>
       </div>
@@ -923,73 +1621,180 @@ function CustomColorPicker({
 ===================================================== */
 
 export default function Home() {
-  const [step, setStep] =
-    useState<Step>("start");
+  const [
+    step,
+    setStep,
+  ] =
+    useState<Step>(
+      "start"
+    );
 
-  const [appLanguage, setAppLanguage] =
-    useState<AppLanguage>("en");
+  const [
+    appLanguage,
+    setAppLanguage,
+  ] =
+    useState<AppLanguage>(
+      "en"
+    );
 
-  const [language, setLanguage] =
-    useState<Language | null>(null);
+  const [
+    language,
+    setLanguage,
+  ] =
+    useState<
+      Language | null
+    >(null);
 
-  const [level, setLevel] =
-    useState<Level | null>(null);
+  const [
+    level,
+    setLevel,
+  ] =
+    useState<
+      Level | null
+    >(null);
 
-  const [goal, setGoal] =
-    useState<Goal | null>(null);
+  const [
+    goal,
+    setGoal,
+  ] =
+    useState<
+      Goal | null
+    >(null);
 
-  const [space, setSpace] =
-    useState<Space | null>(null);
+  const [
+    space,
+    setSpace,
+  ] =
+    useState<
+      Space | null
+    >(null);
 
-  const [bodyColor, setBodyColor] =
-    useState("#C7F238");
+  const [
+    bodyColor,
+    setBodyColor,
+  ] =
+    useState(
+      "#C7F238"
+    );
 
-  const [leftEye, setLeftEye] =
+  const [
+    leftEye,
+    setLeftEye,
+  ] =
     useState("P");
 
-  const [rightEye, setRightEye] =
+  const [
+    rightEye,
+    setRightEye,
+  ] =
     useState("B");
 
-  const [characterTab, setCharacterTab] =
-    useState<CharacterTab>("color");
+  const [
+    characterTab,
+    setCharacterTab,
+  ] =
+    useState<CharacterTab>(
+      "color"
+    );
 
-  const [eyeTarget, setEyeTarget] =
-    useState<EyeTarget>("left");
+  const [
+    eyeTarget,
+    setEyeTarget,
+  ] =
+    useState<EyeTarget>(
+      "left"
+    );
 
-  const [showColorPicker, setShowColorPicker] =
+  const [
+    showColorPicker,
+    setShowColorPicker,
+  ] =
     useState(false);
 
-  const [displayName, setDisplayName] =
-    useState("Bunnies");
+  const [
+    displayName,
+    setDisplayName,
+  ] =
+    useState(
+      "Bunnies"
+    );
 
-  /*
-    ★ 중요
-    한글 IME 문제 해결용
-    이름 입력은 state가 아니라 ref로 관리
-  */
+  const [
+    editingProfileName,
+    setEditingProfileName,
+  ] =
+    useState(false);
 
   const profileNameInputRef =
-    useRef<HTMLInputElement>(null);
+    useRef<HTMLInputElement>(
+      null
+    );
 
-  const [editingProfileName, setEditingProfileName] =
-    useState(false);
-
-  const [notifications, setNotifications] =
+  const [
+    notifications,
+    setNotifications,
+  ] =
     useState(true);
 
-  const [sound, setSound] =
+  const [
+    sound,
+    setSound,
+  ] =
     useState(true);
 
-  const [vibration, setVibration] =
+  const [
+    vibration,
+    setVibration,
+  ] =
     useState(true);
 
-  const [onboardingComplete, setOnboardingComplete] =
+  const [
+    onboardingComplete,
+    setOnboardingComplete,
+  ] =
     useState(false);
 
-  const [loaded, setLoaded] =
+  const [
+    loaded,
+    setLoaded,
+  ] =
     useState(false);
 
-  const t = translations[appLanguage];
+  /*
+    캐릭터 수정 화면으로
+    어디서 들어왔는지 저장
+  */
+
+  const [
+    characterReturnStep,
+    setCharacterReturnStep,
+  ] =
+    useState<CharacterReturnStep>(
+      "info"
+    );
+
+  const t =
+    translations[
+      appLanguage
+    ];
+
+  const bodyClass =
+    "font-pretendard text-[15px] font-normal leading-6 tracking-[-0.01em]";
+
+  const sectionTitleClass =
+    "font-pretendard text-[17px] font-semibold tracking-[-0.01em] text-[#202020]";
+
+  const selectionClass =
+    "font-pretendard text-[16px] font-semibold tracking-[-0.01em] text-[#202020]";
+
+  const isPresetColor =
+    bodyColors.some(
+      (
+        color
+      ) =>
+        color.toLowerCase() ===
+        bodyColor.toLowerCase()
+    );
 
   /* =====================================================
      LOAD
@@ -1004,54 +1809,72 @@ export default function Home() {
 
       if (saved) {
         const data =
-          JSON.parse(saved);
+          JSON.parse(
+            saved
+          );
 
         if (
-          data.appLanguage === "ko" ||
-          data.appLanguage === "en"
+          data.appLanguage ===
+            "ko" ||
+          data.appLanguage ===
+            "en"
         ) {
           setAppLanguage(
             data.appLanguage
           );
         }
 
-        if (data.language) {
+        if (
+          data.language
+        ) {
           setLanguage(
             data.language
           );
         }
 
-        if (data.level) {
+        if (
+          data.level
+        ) {
           setLevel(
             data.level
           );
         }
 
-        if (data.goal) {
+        if (
+          data.goal
+        ) {
           setGoal(
             data.goal
           );
         }
 
-        if (data.bodyColor) {
+        if (
+          data.bodyColor
+        ) {
           setBodyColor(
             data.bodyColor
           );
         }
 
-        if (data.leftEye) {
+        if (
+          data.leftEye
+        ) {
           setLeftEye(
             data.leftEye
           );
         }
 
-        if (data.rightEye) {
+        if (
+          data.rightEye
+        ) {
           setRightEye(
             data.rightEye
           );
         }
 
-        if (data.displayName) {
+        if (
+          data.displayName
+        ) {
           setDisplayName(
             data.displayName
           );
@@ -1085,17 +1908,25 @@ export default function Home() {
         }
 
         if (
-          data.onboardingComplete === true
+          data.onboardingComplete ===
+          true
         ) {
-          setOnboardingComplete(true);
-          setStep("home");
+          setOnboardingComplete(
+            true
+          );
+
+          setStep(
+            "home"
+          );
         }
       }
     } catch {
       //
     }
 
-    setLoaded(true);
+    setLoaded(
+      true
+    );
   }, []);
 
   /* =====================================================
@@ -1103,7 +1934,11 @@ export default function Home() {
   ===================================================== */
 
   useEffect(() => {
-    if (!loaded) return;
+    if (
+      !loaded
+    ) {
+      return;
+    }
 
     localStorage.setItem(
       "plabla-settings",
@@ -1139,7 +1974,7 @@ export default function Home() {
   ]);
 
   /* =====================================================
-     START
+     SPLASH
   ===================================================== */
 
   useEffect(() => {
@@ -1153,248 +1988,45 @@ export default function Home() {
 
     const timer =
       setTimeout(() => {
-        setStep("language");
+        setStep(
+          "language"
+        );
       }, 2000);
 
     return () =>
-      clearTimeout(timer);
+      clearTimeout(
+        timer
+      );
   }, [
     loaded,
     onboardingComplete,
     step,
   ]);
 
-  /* =====================================================
-     TYPOGRAPHY
-  ===================================================== */
-
-  const headlineClass =
-    appLanguage === "ko"
-      ? "text-[35px] leading-[1.28] tracking-[-0.025em] text-[#202020]"
-      : "font-fredoka text-[35px] font-medium leading-[1.1] tracking-[-0.01em] text-[#202020]";
-
-  const headlineStyle =
-    appLanguage === "ko"
-      ? {
-          fontFamily:
-            '"SOYOMaple", sans-serif',
-          fontWeight: 700,
-        }
-      : undefined;
-
-  const bodyClass =
-    "font-pretendard text-[15px] font-normal leading-6 tracking-[-0.01em]";
-
-  const sectionTitleClass =
-    "font-pretendard text-[17px] font-semibold tracking-[-0.01em] text-[#202020]";
-
-  const selectionClass =
-    "font-pretendard text-[16px] font-semibold tracking-[-0.01em] text-[#202020]";
-
-  const isPresetColor =
-    bodyColors.some(
-      (item) =>
-        item.value.toLowerCase() ===
-        bodyColor.toLowerCase()
-    );
-
-  /* =====================================================
-     COMMON
-  ===================================================== */
-
-  const MobileFrame = ({
-    children,
-  }: {
-    children: ReactNode;
-  }) => (
-    <div className="flex min-h-dvh items-center justify-center bg-[#F2F2F2]">
-      <main className="relative flex h-dvh w-full max-w-[430px] flex-col overflow-hidden bg-[#F8F8F8]">
-        {children}
-      </main>
-    </div>
-  );
-
-  const Headline = ({
-    children,
-    className = "",
-  }: {
-    children: ReactNode;
-    className?: string;
-  }) => (
-    <h1
-      className={`${headlineClass} ${className}`}
-      style={headlineStyle}
-    >
-      {children}
-    </h1>
-  );
-
-  const BackButton = ({
-    onClick,
-  }: {
-    onClick: () => void;
-  }) => (
-    <button
-      type="button"
-      onClick={onClick}
-      className="mb-6 flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-white shadow-[0_10px_30px_rgba(0,0,0,0.08)]"
-    >
-      <svg
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-      >
-        <path
-          d="M14.5 6.5L9 12L14.5 17.5"
-          stroke="#202020"
-          strokeWidth="2.6"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    </button>
-  );
-
-  const BottomButton = ({
-    children,
-    disabled,
-    onClick,
-  }: {
-    children: ReactNode;
-    disabled?: boolean;
-    onClick: () => void;
-  }) => (
-    <button
-      type="button"
-      disabled={disabled}
-      onClick={onClick}
-      className={`font-pretendard h-14 w-full rounded-full text-[17px] font-semibold ${
-        disabled
-          ? "bg-[#E5E5E5] text-[#999999]"
-          : "bg-[#BFFF00] text-[#202020]"
-      }`}
-    >
-      {children}
-    </button>
-  );
-
-  const Toggle = ({
-    value,
-    onChange,
-  }: {
-    value: boolean;
-    onChange: () => void;
-  }) => (
-    <button
-      type="button"
-      onClick={onChange}
-      className={`relative h-7 w-12 shrink-0 rounded-full transition ${
-        value
-          ? "bg-[#BFFF00]"
-          : "bg-[#D7D7D7]"
-      }`}
-    >
-      <div
-        className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow transition-all ${
-          value
-            ? "left-6"
-            : "left-1"
-        }`}
-      />
-    </button>
-  );
-
-  const BottomNav = ({
-    current,
-  }: {
-    current: AppTab;
-  }) => {
-    const nav = [
-      {
-        key: "home" as const,
-        en: "Home",
-        ko: "홈",
-        icon: "⌂",
-      },
-      {
-        key: "space" as const,
-        en: "Spaces",
-        ko: "공간",
-        icon: "▦",
-      },
-      {
-        key: "profile" as const,
-        en: "Profile",
-        ko: "프로필",
-        icon: "○",
-      },
-      {
-        key: "settings" as const,
-        en: "Settings",
-        ko: "설정",
-        icon: "⚙",
-      },
-    ];
-
-    return (
-      <div className="border-t border-black/[0.05] bg-white px-3 pb-[max(8px,env(safe-area-inset-bottom))] pt-2">
-        <div className="grid grid-cols-4">
-          {nav.map((item) => {
-            const active =
-              current === item.key;
-
-            return (
-              <button
-                key={item.key}
-                type="button"
-                onClick={() =>
-                  setStep(item.key)
-                }
-                className={`font-pretendard flex flex-col items-center gap-1 ${
-                  active
-                    ? "text-[#202020]"
-                    : "text-[#202020]/30"
-                }`}
-              >
-                <div
-                  className={`flex h-8 w-11 items-center justify-center rounded-full text-[19px] ${
-                    active
-                      ? "bg-[#BFFF00]"
-                      : ""
-                  }`}
-                >
-                  {item.icon}
-                </div>
-
-                <span className="text-[10px] font-semibold">
-                  {appLanguage === "ko"
-                    ? item.ko
-                    : item.en}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-    );
-  };
-
-  if (!loaded) return null;
+  if (!loaded) {
+    return null;
+  }
 
   /* =====================================================
      START
   ===================================================== */
 
-  if (step === "start") {
+  if (
+    step ===
+    "start"
+  ) {
     return (
       <MobileFrame>
         <div className="flex flex-1 items-center justify-center">
           <Image
             src="/plabla-logo-transparent.svg"
             alt="PlaBla"
-            width={210}
-            height={140}
+            width={
+              210
+            }
+            height={
+              140
+            }
             priority
           />
         </div>
@@ -1406,74 +2038,120 @@ export default function Home() {
      LANGUAGE
   ===================================================== */
 
-  if (step === "language") {
+  if (
+    step ===
+    "language"
+  ) {
     return (
       <MobileFrame>
         <div className="hide-scrollbar flex-1 overflow-y-auto px-6 pt-10">
-          <Headline>
+          <Headline
+            appLanguage={
+              appLanguage
+            }
+          >
             {t.chooseLanguage
               .split("\n")
-              .map((line, index) => (
-                <span key={index}>
-                  {line}
-                  {index === 0 && <br />}
-                </span>
-              ))}
+              .map(
+                (
+                  line,
+                  index
+                ) => (
+                  <span
+                    key={
+                      index
+                    }
+                  >
+                    {
+                      line
+                    }
+
+                    {index ===
+                      0 && (
+                      <br />
+                    )}
+                  </span>
+                )
+              )}
           </Headline>
 
           <p
             className={`${bodyClass} mb-7 mt-3 text-[#202020]/45`}
           >
-            {t.chooseLanguageSub}
+            {
+              t.chooseLanguageSub
+            }
           </p>
 
           <div className="space-y-3">
-            {languages.map((item) => {
-              const selected =
-                language === item.name;
+            {languages.map(
+              (
+                item
+              ) => {
+                const selected =
+                  language ===
+                  item.name;
 
-              return (
-                <button
-                  key={item.name}
-                  type="button"
-                  onClick={() =>
-                    setLanguage(item.name)
-                  }
-                  className={`flex h-[68px] w-full items-center gap-4 rounded-[22px] border-2 px-4 ${
-                    selected
-                      ? "border-[#BFFF00] bg-[#F7FFE5]"
-                      : "border-transparent bg-white"
-                  }`}
-                >
-                  <div
-                    className={`font-pretendard flex h-11 w-11 items-center justify-center rounded-full text-[18px] font-semibold ${
+                return (
+                  <button
+                    key={
+                      item.name
+                    }
+                    type="button"
+                    onClick={() =>
+                      setLanguage(
+                        item.name
+                      )
+                    }
+                    className={`flex h-[68px] w-full items-center gap-4 rounded-[22px] border-2 px-4 ${
                       selected
-                        ? "bg-[#BFFF00]"
-                        : "bg-[#F1F1F1]"
+                        ? "border-[#BFFF00] bg-[#F7FFE5]"
+                        : "border-transparent bg-white"
                     }`}
                   >
-                    {item.symbol}
-                  </div>
+                    <div
+                      className={`font-pretendard flex h-11 w-11 items-center justify-center rounded-full text-[18px] font-semibold ${
+                        selected
+                          ? "bg-[#BFFF00]"
+                          : "bg-[#F1F1F1]"
+                      }`}
+                    >
+                      {
+                        item.symbol
+                      }
+                    </div>
 
-                  <span className={selectionClass}>
-                    {appLanguage === "ko"
-                      ? item.ko
-                      : item.name}
-                  </span>
-                </button>
-              );
-            })}
+                    <span
+                      className={
+                        selectionClass
+                      }
+                    >
+                      {appLanguage ===
+                      "ko"
+                        ? item.ko
+                        : item.name}
+                    </span>
+                  </button>
+                );
+              }
+            )}
           </div>
         </div>
 
         <div className="px-6 pb-6 pt-4">
           <BottomButton
-            disabled={!language}
+            disabled={
+              !language
+            }
             onClick={() =>
-              setStep("info")
+              setStep(
+                "info"
+              )
             }
           >
-            {t.next}
+            {
+              t.next
+            }
           </BottomButton>
         </div>
       </MobileFrame>
@@ -1484,89 +2162,147 @@ export default function Home() {
      INFO
   ===================================================== */
 
-  if (step === "info") {
+  if (
+    step ===
+    "info"
+  ) {
     return (
       <MobileFrame>
         <div className="hide-scrollbar flex-1 overflow-y-auto px-6 pt-8">
           <BackButton
             onClick={() =>
-              setStep("language")
+              setStep(
+                "language"
+              )
             }
           />
 
-          <Headline>
+          <Headline
+            appLanguage={
+              appLanguage
+            }
+          >
             {t.tellUs
               .split("\n")
-              .map((line, index) => (
-                <span key={index}>
-                  {line}
-                  {index === 0 && <br />}
-                </span>
-              ))}
+              .map(
+                (
+                  line,
+                  index
+                ) => (
+                  <span
+                    key={
+                      index
+                    }
+                  >
+                    {
+                      line
+                    }
+
+                    {index ===
+                      0 && (
+                      <br />
+                    )}
+                  </span>
+                )
+              )}
           </Headline>
 
           <p
             className={`${bodyClass} mb-8 mt-3 text-[#202020]/45`}
           >
-            {t.tellUsSub}
+            {
+              t.tellUsSub
+            }
           </p>
 
           <p
             className={`${sectionTitleClass} mb-3`}
           >
-            {t.yourLevel}
+            {
+              t.yourLevel
+            }
           </p>
 
           <div className="grid grid-cols-3 gap-3">
-            {levels.map((item) => (
-              <button
-                key={item.value}
-                type="button"
-                onClick={() =>
-                  setLevel(item.value)
-                }
-                className={`h-[76px] rounded-[22px] border-2 ${
-                  level === item.value
-                    ? "border-[#BFFF00] bg-[#F7FFE5]"
-                    : "border-transparent bg-white"
-                }`}
-              >
-                <span className={selectionClass}>
-                  {appLanguage === "ko"
-                    ? item.ko
-                    : item.value}
-                </span>
-              </button>
-            ))}
+            {levels.map(
+              (
+                item
+              ) => (
+                <button
+                  key={
+                    item.value
+                  }
+                  type="button"
+                  onClick={() =>
+                    setLevel(
+                      item.value
+                    )
+                  }
+                  className={`h-[76px] rounded-[22px] border-2 ${
+                    level ===
+                    item.value
+                      ? "border-[#BFFF00] bg-[#F7FFE5]"
+                      : "border-transparent bg-white"
+                  }`}
+                >
+                  <span
+                    className={
+                      selectionClass
+                    }
+                  >
+                    {appLanguage ===
+                    "ko"
+                      ? item.ko
+                      : item.value}
+                  </span>
+                </button>
+              )
+            )}
           </div>
 
           <p
             className={`${sectionTitleClass} mb-3 mt-8`}
           >
-            {t.learningGoal}
+            {
+              t.learningGoal
+            }
           </p>
 
           <div className="grid grid-cols-2 gap-3">
-            {goals.map((item) => (
-              <button
-                key={item.value}
-                type="button"
-                onClick={() =>
-                  setGoal(item.value)
-                }
-                className={`h-[76px] rounded-[22px] border-2 ${
-                  goal === item.value
-                    ? "border-[#BFFF00] bg-[#F7FFE5]"
-                    : "border-transparent bg-white"
-                }`}
-              >
-                <span className={selectionClass}>
-                  {appLanguage === "ko"
-                    ? item.ko
-                    : item.value}
-                </span>
-              </button>
-            ))}
+            {goals.map(
+              (
+                item
+              ) => (
+                <button
+                  key={
+                    item.value
+                  }
+                  type="button"
+                  onClick={() =>
+                    setGoal(
+                      item.value
+                    )
+                  }
+                  className={`h-[76px] rounded-[22px] border-2 ${
+                    goal ===
+                    item.value
+                      ? "border-[#BFFF00] bg-[#F7FFE5]"
+                      : "border-transparent bg-white"
+                  }`}
+                >
+                  <span
+                    className={
+                      selectionClass
+                    }
+                  >
+                    {appLanguage ===
+                    "ko"
+                      ? item.ko
+                      : item.value}
+                  </span>
+                </button>
+              )
+            )}
           </div>
         </div>
 
@@ -1576,11 +2312,19 @@ export default function Home() {
               !level ||
               !goal
             }
-            onClick={() =>
-              setStep("character")
-            }
+            onClick={() => {
+              setCharacterReturnStep(
+                "info"
+              );
+
+              setStep(
+                "character"
+              );
+            }}
           >
-            {t.next}
+            {
+              t.next
+            }
           </BottomButton>
         </div>
       </MobileFrame>
@@ -1591,21 +2335,41 @@ export default function Home() {
      CHARACTER
   ===================================================== */
 
-  if (step === "character") {
+  if (
+    step ===
+    "character"
+  ) {
     return (
       <MobileFrame>
         {showColorPicker && (
           <CustomColorPicker
-            initialColor={bodyColor}
-            leftEye={leftEye}
-            rightEye={rightEye}
-            appLanguage={appLanguage}
-            onCancel={() =>
-              setShowColorPicker(false)
+            initialColor={
+              bodyColor
             }
-            onSelect={(color) => {
-              setBodyColor(color);
-              setShowColorPicker(false);
+            leftEye={
+              leftEye
+            }
+            rightEye={
+              rightEye
+            }
+            appLanguage={
+              appLanguage
+            }
+            onCancel={() =>
+              setShowColorPicker(
+                false
+              )
+            }
+            onSelect={(
+              color
+            ) => {
+              setBodyColor(
+                color
+              );
+
+              setShowColorPicker(
+                false
+              );
             }}
           />
         )}
@@ -1613,99 +2377,149 @@ export default function Home() {
         <div className="hide-scrollbar flex-1 overflow-y-auto px-6 pt-8">
           <BackButton
             onClick={() =>
-              setStep("info")
+              setStep(
+                characterReturnStep
+              )
             }
           />
 
-          <Headline>
-            {t.makeItYours}
+          <Headline
+            appLanguage={
+              appLanguage
+            }
+          >
+            {
+              t.makeItYours
+            }
           </Headline>
 
           <p
             className={`${bodyClass} mt-3 text-[#202020]/45`}
           >
-            {t.createCharacter}
+            {
+              t.createCharacter
+            }
           </p>
 
           <div className="mt-5 h-[300px] overflow-hidden rounded-[30px] bg-white">
             <CharacterView
-              bodyColor={bodyColor}
-              leftEye={leftEye}
-              rightEye={rightEye}
+              bodyColor={
+                bodyColor
+              }
+              leftEye={
+                leftEye
+              }
+              rightEye={
+                rightEye
+              }
               rotate
             />
           </div>
 
           <p className="font-pretendard mt-2 text-center text-[12px] text-[#202020]/30">
-            {t.dragRotate}
+            {
+              t.dragRotate
+            }
           </p>
 
           <div className="mt-5 grid grid-cols-2 rounded-full bg-[#EEEEEE] p-1">
             <button
               type="button"
               onClick={() =>
-                setCharacterTab("color")
+                setCharacterTab(
+                  "color"
+                )
               }
               className={`rounded-full py-2.5 ${
-                characterTab === "color"
+                characterTab ===
+                "color"
                   ? "bg-white shadow-sm"
                   : ""
               }`}
             >
-              <span className={selectionClass}>
-                {t.color}
+              <span
+                className={
+                  selectionClass
+                }
+              >
+                {
+                  t.color
+                }
               </span>
             </button>
 
             <button
               type="button"
               onClick={() =>
-                setCharacterTab("eyes")
+                setCharacterTab(
+                  "eyes"
+                )
               }
               className={`rounded-full py-2.5 ${
-                characterTab === "eyes"
+                characterTab ===
+                "eyes"
                   ? "bg-white shadow-sm"
                   : ""
               }`}
             >
-              <span className={selectionClass}>
-                {t.eyes}
+              <span
+                className={
+                  selectionClass
+                }
+              >
+                {
+                  t.eyes
+                }
               </span>
             </button>
           </div>
 
-          {characterTab === "color" && (
+          {characterTab ===
+            "color" && (
             <div className="mt-6">
               <p
                 className={`${sectionTitleClass} mb-4`}
               >
-                {t.bodyColor}
+                {
+                  t.bodyColor
+                }
               </p>
 
               <div className="flex flex-wrap gap-4">
-                {bodyColors.map((item) => (
-                  <button
-                    key={item.value}
-                    type="button"
-                    onClick={() =>
-                      setBodyColor(item.value)
-                    }
-                    className={`h-12 w-12 rounded-full ${
-                      bodyColor === item.value
-                        ? "ring-2 ring-[#202020] ring-offset-2"
-                        : ""
-                    }`}
-                    style={{
-                      backgroundColor:
-                        item.value,
-                    }}
-                  />
-                ))}
+                {bodyColors.map(
+                  (
+                    color
+                  ) => (
+                    <button
+                      key={
+                        color
+                      }
+                      type="button"
+                      onClick={() =>
+                        setBodyColor(
+                          color
+                        )
+                      }
+                      className={`h-12 w-12 rounded-full ${
+                        bodyColor ===
+                        color
+                          ? "ring-2 ring-[#202020] ring-offset-2"
+                          : ""
+                      }`}
+                      style={{
+                        backgroundColor:
+                          color,
+                      }}
+                    />
+                  )
+                )}
 
                 <button
                   type="button"
                   onClick={() =>
-                    setShowColorPicker(true)
+                    setShowColorPicker(
+                      true
+                    )
                   }
                   className={`flex h-12 w-12 items-center justify-center rounded-full ${
                     !isPresetColor
@@ -1725,60 +2539,95 @@ export default function Home() {
             </div>
           )}
 
-          {characterTab === "eyes" && (
+          {characterTab ===
+            "eyes" && (
             <div className="mt-6">
-              <p className={sectionTitleClass}>
-                {t.eyes}
+              <p
+                className={
+                  sectionTitleClass
+                }
+              >
+                {
+                  t.eyes
+                }
               </p>
 
               <p className="font-pretendard mt-1 text-[13px] text-[#202020]/40">
-                {t.eyeHelp}
+                {
+                  t.eyeHelp
+                }
               </p>
 
               <div className="mt-4 grid grid-cols-2 rounded-[20px] bg-[#ECECEC] p-1">
                 <button
                   type="button"
                   onClick={() =>
-                    setEyeTarget("left")
+                    setEyeTarget(
+                      "left"
+                    )
                   }
                   className={`rounded-[17px] py-2.5 ${
-                    eyeTarget === "left"
+                    eyeTarget ===
+                    "left"
                       ? "bg-white shadow-sm"
                       : ""
                   }`}
                 >
-                  <span className={selectionClass}>
-                    {t.leftEye}
+                  <span
+                    className={
+                      selectionClass
+                    }
+                  >
+                    {
+                      t.leftEye
+                    }
                   </span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() =>
-                    setEyeTarget("right")
+                    setEyeTarget(
+                      "right"
+                    )
                   }
                   className={`rounded-[17px] py-2.5 ${
-                    eyeTarget === "right"
+                    eyeTarget ===
+                    "right"
                       ? "bg-white shadow-sm"
                       : ""
                   }`}
                 >
-                  <span className={selectionClass}>
-                    {t.rightEye}
+                  <span
+                    className={
+                      selectionClass
+                    }
+                  >
+                    {
+                      t.rightEye
+                    }
                   </span>
                 </button>
               </div>
 
               <div className="mt-4 grid grid-cols-2 gap-3">
                 <input
-                  value={leftEye}
-                  onFocus={() =>
-                    setEyeTarget("left")
+                  value={
+                    leftEye
                   }
-                  onChange={(event) =>
+                  onFocus={() =>
+                    setEyeTarget(
+                      "left"
+                    )
+                  }
+                  onChange={(
+                    event
+                  ) =>
                     setLeftEye(
                       Array.from(
-                        event.target.value
+                        event
+                          .target
+                          .value
                       )
                         .slice(-1)
                         .join("")
@@ -1788,14 +2637,22 @@ export default function Home() {
                 />
 
                 <input
-                  value={rightEye}
-                  onFocus={() =>
-                    setEyeTarget("right")
+                  value={
+                    rightEye
                   }
-                  onChange={(event) =>
+                  onFocus={() =>
+                    setEyeTarget(
+                      "right"
+                    )
+                  }
+                  onChange={(
+                    event
+                  ) =>
                     setRightEye(
                       Array.from(
-                        event.target.value
+                        event
+                          .target
+                          .value
                       )
                         .slice(-1)
                         .join("")
@@ -1808,28 +2665,43 @@ export default function Home() {
               <p
                 className={`${sectionTitleClass} mb-3 mt-6`}
               >
-                {t.suggestions}
+                {
+                  t.suggestions
+                }
               </p>
 
               <div className="grid grid-cols-4 gap-2">
-                {eyeSuggestions.map((item) => (
-                  <button
-                    key={item}
-                    type="button"
-                    onClick={() => {
-                      if (
-                        eyeTarget === "left"
-                      ) {
-                        setLeftEye(item);
-                      } else {
-                        setRightEye(item);
+                {eyeSuggestions.map(
+                  (
+                    item
+                  ) => (
+                    <button
+                      key={
+                        item
                       }
-                    }}
-                    className="font-pretendard h-14 rounded-[18px] bg-white text-[20px] font-semibold"
-                  >
-                    {item}
-                  </button>
-                ))}
+                      type="button"
+                      onClick={() => {
+                        if (
+                          eyeTarget ===
+                          "left"
+                        ) {
+                          setLeftEye(
+                            item
+                          );
+                        } else {
+                          setRightEye(
+                            item
+                          );
+                        }
+                      }}
+                      className="font-pretendard h-14 rounded-[18px] bg-white text-[20px] font-semibold"
+                    >
+                      {
+                        item
+                      }
+                    </button>
+                  )
+                )}
               </div>
             </div>
           )}
@@ -1837,11 +2709,28 @@ export default function Home() {
           <div className="my-8">
             <BottomButton
               onClick={() => {
-                setOnboardingComplete(true);
-                setStep("home");
+                if (
+                  !onboardingComplete
+                ) {
+                  setOnboardingComplete(
+                    true
+                  );
+
+                  setStep(
+                    "home"
+                  );
+
+                  return;
+                }
+
+                setStep(
+                  characterReturnStep
+                );
               }}
             >
-              {t.continue}
+              {onboardingComplete
+                ? t.save
+                : t.continue}
             </BottomButton>
           </div>
         </div>
@@ -1853,46 +2742,77 @@ export default function Home() {
      HOME
   ===================================================== */
 
-  if (step === "home") {
+  if (
+    step ===
+    "home"
+  ) {
     return (
       <MobileFrame>
         <div className="hide-scrollbar flex-1 overflow-y-auto px-6 pt-8">
           <p className="font-pretendard text-[14px] text-[#202020]/40">
-            {t.hi}, {displayName}
+            {
+              t.hi
+            },{" "}
+            {
+              displayName
+            }
           </p>
 
-          <Headline className="mt-1">
-            {t.readyToTalk}
+          <Headline
+            appLanguage={
+              appLanguage
+            }
+            className="mt-1"
+          >
+            {
+              t.readyToTalk
+            }
           </Headline>
 
           <div className="mt-6 overflow-hidden rounded-[28px] bg-white">
             <div className="h-[230px]">
               <CharacterView
-                bodyColor={bodyColor}
-                leftEye={leftEye}
-                rightEye={rightEye}
+                bodyColor={
+                  bodyColor
+                }
+                leftEye={
+                  leftEye
+                }
+                rightEye={
+                  rightEye
+                }
               />
             </div>
 
             <div className="px-5 pb-5">
               <p className="font-pretendard text-[13px] text-[#202020]/40">
-                {t.learning}
+                {
+                  t.learning
+                }
               </p>
 
               <p className="font-pretendard mt-1 text-[16px] font-semibold">
-                {appLanguage === "ko"
+                {appLanguage ===
+                "ko"
                   ? languages.find(
-                      (item) =>
-                        item.name === language
+                      (
+                        item
+                      ) =>
+                        item.name ===
+                        language
                     )?.ko
                   : language}
 
                 {" · "}
 
-                {appLanguage === "ko"
+                {appLanguage ===
+                "ko"
                   ? levels.find(
-                      (item) =>
-                        item.value === level
+                      (
+                        item
+                      ) =>
+                        item.value ===
+                        level
                     )?.ko
                   : level}
               </p>
@@ -1900,143 +2820,243 @@ export default function Home() {
           </div>
 
           <div className="mt-7 flex items-center justify-between">
-            <h2 className={sectionTitleClass}>
-              {t.jumpIntoSpace}
+            <h2
+              className={
+                sectionTitleClass
+              }
+            >
+              {
+                t.jumpIntoSpace
+              }
             </h2>
 
             <button
               type="button"
               onClick={() =>
-                setStep("space")
+                setStep(
+                  "space"
+                )
               }
               className="font-pretendard text-[13px] font-semibold text-[#202020]/40"
             >
-              {t.seeAll}
+              {
+                t.seeAll
+              }
             </button>
           </div>
 
           <div className="mt-3 grid grid-cols-2 gap-3">
             {spaces
-              .slice(0, 2)
-              .map((item) => (
-                <button
-                  key={item.name}
-                  type="button"
-                  onClick={() => {
-                    setSpace(item.name);
-                    setStep("landscape");
-                  }}
-                  className="overflow-hidden rounded-[22px] bg-white text-left"
-                >
-                  <div className="relative h-[110px]">
-                    <Image
-                      src={item.image}
-                      alt={item.name}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
+              .slice(
+                0,
+                2
+              )
+              .map(
+                (
+                  item
+                ) => (
+                  <button
+                    key={
+                      item.name
+                    }
+                    type="button"
+                    onClick={() => {
+                      setSpace(
+                        item.name
+                      );
 
-                  <div className="px-4 py-3">
-                    <p className="font-pretendard text-[14px] font-semibold">
-                      {appLanguage === "ko"
-                        ? item.ko
-                        : item.name}
-                    </p>
-                  </div>
-                </button>
-              ))}
+                      setStep(
+                        "landscape"
+                      );
+                    }}
+                    className="overflow-hidden rounded-[22px] bg-white text-left"
+                  >
+                    <div className="relative h-[110px]">
+                      <Image
+                        src={
+                          item.image
+                        }
+                        alt={
+                          item.name
+                        }
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+
+                    <div className="px-4 py-3">
+                      <p className="font-pretendard text-[14px] font-semibold">
+                        {appLanguage ===
+                        "ko"
+                          ? item.ko
+                          : item.name}
+                      </p>
+                    </div>
+                  </button>
+                )
+              )}
           </div>
         </div>
 
-        <BottomNav current="home" />
+        <BottomNav
+          current="home"
+          appLanguage={
+            appLanguage
+          }
+          onChange={(
+            tab
+          ) =>
+            setStep(
+              tab
+            )
+          }
+        />
       </MobileFrame>
     );
   }
 
   /* =====================================================
-     SPACE
+     SPACES
   ===================================================== */
 
-  if (step === "space") {
+  if (
+    step ===
+    "space"
+  ) {
     return (
       <MobileFrame>
         <div className="hide-scrollbar flex-1 overflow-y-auto px-6 pt-8">
-          <Headline>
+          <Headline
+            appLanguage={
+              appLanguage
+            }
+          >
             {t.spacesTitle
               .split("\n")
-              .map((line, index) => (
-                <span key={index}>
-                  {line}
-                  <br />
-                </span>
-              ))}
+              .map(
+                (
+                  line,
+                  index
+                ) => (
+                  <span
+                    key={
+                      index
+                    }
+                  >
+                    {
+                      line
+                    }
+
+                    <br />
+                  </span>
+                )
+              )}
           </Headline>
 
           <p
             className={`${bodyClass} mb-6 mt-3 text-[#202020]/45`}
           >
-            {t.spacesSub}
+            {
+              t.spacesSub
+            }
           </p>
 
           <div className="space-y-4 pb-6">
-            {spaces.map((item) => (
-              <button
-                key={item.name}
-                type="button"
-                onClick={() => {
-                  setSpace(item.name);
-                  setStep("landscape");
-                }}
-                className="w-full overflow-hidden rounded-[26px] bg-white text-left"
-              >
-                <div className="relative h-[155px]">
-                  <Image
-                    src={item.image}
-                    alt={item.name}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
+            {spaces.map(
+              (
+                item
+              ) => (
+                <button
+                  key={
+                    item.name
+                  }
+                  type="button"
+                  onClick={() => {
+                    setSpace(
+                      item.name
+                    );
 
-                <div className="flex items-center justify-between px-5 py-4">
-                  <div>
-                    <p className="font-pretendard text-[17px] font-semibold">
-                      {appLanguage === "ko"
-                        ? item.ko
-                        : item.name}
-                    </p>
-
-                    <p className="font-pretendard mt-1 text-[13px] text-[#202020]/45">
-                      {appLanguage === "ko"
-                        ? item.koDescription
-                        : item.description}
-                    </p>
+                    setStep(
+                      "landscape"
+                    );
+                  }}
+                  className="w-full overflow-hidden rounded-[26px] bg-white text-left"
+                >
+                  <div className="relative h-[155px]">
+                    <Image
+                      src={
+                        item.image
+                      }
+                      alt={
+                        item.name
+                      }
+                      fill
+                      className="object-cover"
+                    />
                   </div>
 
-                  <span className="font-pretendard shrink-0 rounded-full bg-[#F2F2F2] px-3 py-2 text-[13px] font-semibold">
-                    👥 {item.people}
-                  </span>
-                </div>
-              </button>
-            ))}
+                  <div className="flex items-center justify-between px-5 py-4">
+                    <div>
+                      <p className="font-pretendard text-[17px] font-semibold">
+                        {appLanguage ===
+                        "ko"
+                          ? item.ko
+                          : item.name}
+                      </p>
+
+                      <p className="font-pretendard mt-1 text-[13px] text-[#202020]/45">
+                        {appLanguage ===
+                        "ko"
+                          ? item.koDescription
+                          : item.description}
+                      </p>
+                    </div>
+
+                    <span className="font-pretendard shrink-0 rounded-full bg-[#F2F2F2] px-3 py-2 text-[13px] font-semibold">
+                      👥{" "}
+                      {
+                        item.people
+                      }
+                    </span>
+                  </div>
+                </button>
+              )
+            )}
           </div>
         </div>
 
-        <BottomNav current="space" />
+        <BottomNav
+          current="space"
+          appLanguage={
+            appLanguage
+          }
+          onChange={(
+            tab
+          ) =>
+            setStep(
+              tab
+            )
+          }
+        />
       </MobileFrame>
     );
   }
 
   /* =====================================================
-     LANDSCAPE
+     ENTER SPACE
   ===================================================== */
 
-  if (step === "landscape") {
+  if (
+    step ===
+    "landscape"
+  ) {
     const current =
       spaces.find(
-        (item) =>
-          item.name === space
+        (
+          item
+        ) =>
+          item.name ===
+          space
       );
 
     return (
@@ -2045,8 +3065,12 @@ export default function Home() {
           {current && (
             <>
               <Image
-                src={current.image}
-                alt={current.name}
+                src={
+                  current.image
+                }
+                alt={
+                  current.name
+                }
                 fill
                 className="object-cover opacity-50"
               />
@@ -2057,7 +3081,9 @@ export default function Home() {
                 <button
                   type="button"
                   onClick={() =>
-                    setStep("space")
+                    setStep(
+                      "space"
+                    )
                   }
                   className="flex h-12 w-12 items-center justify-center rounded-full bg-white"
                 >
@@ -2066,33 +3092,27 @@ export default function Home() {
 
                 <div className="mt-auto">
                   <p className="font-pretendard text-[13px] text-white/55">
-                    {t.entering}
+                    {
+                      t.entering
+                    }
                   </p>
 
-                  <h1
-                    className={
-                      appLanguage === "ko"
-                        ? "mt-1 text-[38px] leading-[1.25] text-white"
-                        : "font-fredoka mt-1 text-[38px] font-medium text-white"
+                  <Headline
+                    appLanguage={
+                      appLanguage
                     }
-                    style={
-                      appLanguage === "ko"
-                        ? {
-                            fontFamily:
-                              '"SOYOMaple", sans-serif',
-                            fontWeight:
-                              700,
-                          }
-                        : undefined
-                    }
+                    light
+                    className="mt-1 !text-[38px]"
                   >
-                    {appLanguage === "ko"
+                    {appLanguage ===
+                    "ko"
                       ? current.ko
                       : current.name}
-                  </h1>
+                  </Headline>
 
                   <p className="font-pretendard mt-3 text-[14px] text-white/60">
-                    {appLanguage === "ko"
+                    {appLanguage ===
+                    "ko"
                       ? current.koDescription
                       : current.description}
                   </p>
@@ -2102,7 +3122,19 @@ export default function Home() {
           )}
         </div>
 
-        <BottomNav current="space" />
+        <BottomNav
+          current="space"
+          appLanguage={
+            appLanguage
+          }
+          onChange={(
+            tab
+          ) =>
+            setStep(
+              tab
+            )
+          }
+        />
       </MobileFrame>
     );
   }
@@ -2111,25 +3143,42 @@ export default function Home() {
      PROFILE
   ===================================================== */
 
-  if (step === "profile") {
+  if (
+    step ===
+    "profile"
+  ) {
     return (
       <MobileFrame>
         <div className="hide-scrollbar flex-1 overflow-y-auto px-6 pt-8">
-          <Headline>
-            {t.yourProfile}
+          <Headline
+            appLanguage={
+              appLanguage
+            }
+          >
+            {
+              t.yourProfile
+            }
           </Headline>
 
           <p
             className={`${bodyClass} mt-3 text-[#202020]/45`}
           >
-            {t.profileSub}
+            {
+              t.profileSub
+            }
           </p>
 
           <div className="mt-6 h-[260px] overflow-hidden rounded-[28px] bg-white">
             <CharacterView
-              bodyColor={bodyColor}
-              leftEye={leftEye}
-              rightEye={rightEye}
+              bodyColor={
+                bodyColor
+              }
+              leftEye={
+                leftEye
+              }
+              rightEye={
+                rightEye
+              }
             />
           </div>
 
@@ -2137,67 +3186,89 @@ export default function Home() {
             {!editingProfileName ? (
               <div className="flex items-center justify-between">
                 <p className="font-pretendard text-[19px] font-semibold">
-                  {displayName}
+                  {
+                    displayName
+                  }
                 </p>
 
                 <button
                   type="button"
                   onClick={() => {
-                    setEditingProfileName(true);
+                    setEditingProfileName(
+                      true
+                    );
 
-                    requestAnimationFrame(() => {
-                      if (
-                        profileNameInputRef.current
-                      ) {
-                        profileNameInputRef.current.value =
+                    requestAnimationFrame(
+                      () => {
+                        const input =
+                          profileNameInputRef.current;
+
+                        if (
+                          !input
+                        ) {
+                          return;
+                        }
+
+                        input.value =
                           displayName;
 
-                        profileNameInputRef.current.focus();
+                        input.focus();
 
                         const length =
-                          profileNameInputRef.current.value.length;
+                          input.value.length;
 
-                        profileNameInputRef.current.setSelectionRange(
+                        input.setSelectionRange(
                           length,
                           length
                         );
                       }
-                    });
+                    );
                   }}
                   className="font-pretendard rounded-full bg-[#F1F1F1] px-4 py-2 text-[12px] font-semibold"
                 >
-                  {t.editName}
+                  {
+                    t.editName
+                  }
                 </button>
               </div>
             ) : (
               <div>
                 <p className="font-pretendard mb-2 text-[12px] text-[#202020]/40">
-                  {t.displayName}
+                  {
+                    t.displayName
+                  }
                 </p>
 
-                {/* 
-                  ★ 한글 IME 해결
-                  value/onChange 없이 uncontrolled input 사용
-                */}
-
                 <input
-                  ref={profileNameInputRef}
-                  defaultValue={displayName}
-                  maxLength={20}
+                  ref={
+                    profileNameInputRef
+                  }
+                  defaultValue={
+                    displayName
+                  }
+                  maxLength={
+                    20
+                  }
                   autoComplete="off"
-                  spellCheck={false}
+                  spellCheck={
+                    false
+                  }
                   className="font-pretendard h-[50px] w-full rounded-[16px] bg-[#F5F5F5] px-4 text-[15px] outline-none"
                 />
 
                 <div className="mt-3 grid grid-cols-2 gap-2">
                   <button
                     type="button"
-                    onClick={() => {
-                      setEditingProfileName(false);
-                    }}
+                    onClick={() =>
+                      setEditingProfileName(
+                        false
+                      )
+                    }
                     className="font-pretendard h-11 rounded-full bg-[#EEEEEE] text-[14px] font-semibold"
                   >
-                    {t.cancel}
+                    {
+                      t.cancel
+                    }
                   </button>
 
                   <button
@@ -2206,20 +3277,32 @@ export default function Home() {
                       const input =
                         profileNameInputRef.current;
 
-                      if (!input) return;
-
-                      const trimmed =
-                        input.value.trim();
-
-                      if (trimmed.length > 0) {
-                        setDisplayName(trimmed);
+                      if (
+                        !input
+                      ) {
+                        return;
                       }
 
-                      setEditingProfileName(false);
+                      const value =
+                        input.value.trim();
+
+                      if (
+                        value
+                      ) {
+                        setDisplayName(
+                          value
+                        );
+                      }
+
+                      setEditingProfileName(
+                        false
+                      );
                     }}
                     className="font-pretendard h-11 rounded-full bg-[#BFFF00] text-[14px] font-semibold"
                   >
-                    {t.save}
+                    {
+                      t.save
+                    }
                   </button>
                 </div>
               </div>
@@ -2228,14 +3311,20 @@ export default function Home() {
             <div className="mt-6 space-y-4 font-pretendard text-[14px]">
               <div className="flex justify-between">
                 <span className="text-[#202020]/40">
-                  {t.language}
+                  {
+                    t.language
+                  }
                 </span>
 
                 <strong>
-                  {appLanguage === "ko"
+                  {appLanguage ===
+                  "ko"
                     ? languages.find(
-                        (item) =>
-                          item.name === language
+                        (
+                          item
+                        ) =>
+                          item.name ===
+                          language
                       )?.ko
                     : language}
                 </strong>
@@ -2243,14 +3332,20 @@ export default function Home() {
 
               <div className="flex justify-between">
                 <span className="text-[#202020]/40">
-                  {t.level}
+                  {
+                    t.level
+                  }
                 </span>
 
                 <strong>
-                  {appLanguage === "ko"
+                  {appLanguage ===
+                  "ko"
                     ? levels.find(
-                        (item) =>
-                          item.value === level
+                        (
+                          item
+                        ) =>
+                          item.value ===
+                          level
                       )?.ko
                     : level}
                 </strong>
@@ -2260,16 +3355,36 @@ export default function Home() {
 
           <button
             type="button"
-            onClick={() =>
-              setStep("character")
-            }
+            onClick={() => {
+              setCharacterReturnStep(
+                "profile"
+              );
+
+              setStep(
+                "character"
+              );
+            }}
             className="font-pretendard mt-4 h-[52px] w-full rounded-full bg-[#EEEEEE] text-[15px] font-semibold"
           >
-            {t.editCharacter}
+            {
+              t.editCharacter
+            }
           </button>
         </div>
 
-        <BottomNav current="profile" />
+        <BottomNav
+          current="profile"
+          appLanguage={
+            appLanguage
+          }
+          onChange={(
+            tab
+          ) =>
+            setStep(
+              tab
+            )
+          }
+        />
       </MobileFrame>
     );
   }
@@ -2278,41 +3393,65 @@ export default function Home() {
      SETTINGS
   ===================================================== */
 
-  if (step === "settings") {
+  if (
+    step ===
+    "settings"
+  ) {
     return (
       <MobileFrame>
+        {/*
+          ★ 이 DIV가 계속 같은 DOM으로 유지됨.
+          state 변경해도 remount되지 않기 때문에
+          스크롤 위치가 그대로 유지됨.
+        */}
+
         <div className="hide-scrollbar flex-1 overflow-y-auto px-6 pb-7 pt-8">
-          <Headline>
-            {t.settings}
+          <Headline
+            appLanguage={
+              appLanguage
+            }
+          >
+            {
+              t.settings
+            }
           </Headline>
 
           <p
             className={`${bodyClass} mt-3 text-[#202020]/45`}
           >
-            {t.settingsSub}
+            {
+              t.settingsSub
+            }
           </p>
 
-          {/* LANGUAGE */}
+          {/* APP LANGUAGE */}
 
           <p
             className={`${sectionTitleClass} mb-3 mt-7`}
           >
-            {t.general}
+            {
+              t.general
+            }
           </p>
 
           <div className="rounded-[24px] bg-white p-5">
             <p className="font-pretendard text-[15px] font-semibold">
-              {t.appLanguage}
+              {
+                t.appLanguage
+              }
             </p>
 
             <div className="mt-4 grid grid-cols-2 gap-2">
               <button
                 type="button"
                 onClick={() =>
-                  setAppLanguage("en")
+                  setAppLanguage(
+                    "en"
+                  )
                 }
                 className={`font-pretendard h-[52px] rounded-[16px] text-[14px] font-semibold ${
-                  appLanguage === "en"
+                  appLanguage ===
+                  "en"
                     ? "bg-[#BFFF00]"
                     : "bg-[#F3F3F3]"
                 }`}
@@ -2323,10 +3462,13 @@ export default function Home() {
               <button
                 type="button"
                 onClick={() =>
-                  setAppLanguage("ko")
+                  setAppLanguage(
+                    "ko"
+                  )
                 }
                 className={`font-pretendard h-[52px] rounded-[16px] text-[14px] font-semibold ${
-                  appLanguage === "ko"
+                  appLanguage ===
+                  "ko"
                     ? "bg-[#BFFF00]"
                     : "bg-[#F3F3F3]"
                 }`}
@@ -2341,20 +3483,28 @@ export default function Home() {
                 "中文",
                 "Español",
                 "Français",
-              ].map((item) => (
-                <button
-                  key={item}
-                  type="button"
-                  disabled
-                  className="font-pretendard relative h-[48px] cursor-not-allowed rounded-[15px] bg-[#F5F5F5] text-[13px] font-medium text-[#202020]/30"
-                >
-                  {item}
+              ].map(
+                (
+                  item
+                ) => (
+                  <button
+                    key={
+                      item
+                    }
+                    type="button"
+                    disabled
+                    className="font-pretendard relative h-[48px] cursor-not-allowed rounded-[15px] bg-[#F5F5F5] text-[13px] font-medium text-[#202020]/30"
+                  >
+                    {
+                      item
+                    }
 
-                  <span className="absolute right-2 top-2 rounded-full bg-[#E8E8E8] px-2 py-[2px] text-[8px] font-semibold">
-                    Soon
-                  </span>
-                </button>
-              ))}
+                    <span className="absolute right-2 top-2 rounded-full bg-[#E8E8E8] px-2 py-[2px] text-[8px] font-semibold">
+                      Soon
+                    </span>
+                  </button>
+                )
+              )}
             </div>
           </div>
 
@@ -2363,30 +3513,44 @@ export default function Home() {
           <p
             className={`${sectionTitleClass} mb-3 mt-7`}
           >
-            {t.account}
+            {
+              t.account
+            }
           </p>
 
           <div className="overflow-hidden rounded-[24px] bg-white">
             <div className="flex items-center justify-between p-5">
               <div>
                 <p className="font-pretendard text-[15px] font-semibold">
-                  {t.displayName}
+                  {
+                    t.displayName
+                  }
                 </p>
 
                 <p className="font-pretendard mt-1 text-[13px] text-[#202020]/40">
-                  {displayName}
+                  {
+                    displayName
+                  }
                 </p>
               </div>
 
               <button
                 type="button"
                 onClick={() => {
-                  setStep("profile");
-                  setEditingProfileName(true);
+                  setEditingProfileName(
+                    true
+                  );
+
+                  setStep(
+                    "profile"
+                  );
                 }}
                 className="font-pretendard text-[14px] font-semibold text-[#202020]/40"
               >
-                {t.edit} ›
+                {
+                  t.edit
+                }{" "}
+                ›
               </button>
             </div>
 
@@ -2394,7 +3558,8 @@ export default function Home() {
               type="button"
               onClick={() =>
                 alert(
-                  appLanguage === "ko"
+                  appLanguage ===
+                    "ko"
                     ? "계정 관리 기능은 추후 실제 계정 시스템과 연결할 수 있어요."
                     : "Account management can later be connected to the real account system."
                 )
@@ -2402,7 +3567,9 @@ export default function Home() {
               className="font-pretendard flex w-full items-center justify-between border-t border-black/[0.05] p-5"
             >
               <span className="text-[15px] font-semibold">
-                {t.manageAccount}
+                {
+                  t.manageAccount
+                }
               </span>
 
               <span className="text-[#202020]/30">
@@ -2416,112 +3583,163 @@ export default function Home() {
           <p
             className={`${sectionTitleClass} mb-3 mt-7`}
           >
-            {t.learningSettings}
+            {
+              t.learningSettings
+            }
           </p>
 
           <div className="rounded-[24px] bg-white p-5">
             <p className="font-pretendard text-[14px] font-semibold">
-              {t.learningLanguage}
+              {
+                t.learningLanguage
+              }
             </p>
 
             <div className="mt-3 grid grid-cols-2 gap-2">
-              {languages.map((item) => (
-                <button
-                  key={item.name}
-                  type="button"
-                  onClick={() =>
-                    setLanguage(item.name)
-                  }
-                  className={`font-pretendard h-[48px] rounded-[15px] text-[13px] font-semibold ${
-                    language === item.name
-                      ? "bg-[#BFFF00]"
-                      : "bg-[#F5F5F5]"
-                  }`}
-                >
-                  {item.symbol}{" "}
-                  {appLanguage === "ko"
-                    ? item.ko
-                    : item.name}
-                </button>
-              ))}
+              {languages.map(
+                (
+                  item
+                ) => (
+                  <button
+                    key={
+                      item.name
+                    }
+                    type="button"
+                    onClick={() =>
+                      setLanguage(
+                        item.name
+                      )
+                    }
+                    className={`font-pretendard h-[48px] rounded-[15px] text-[13px] font-semibold ${
+                      language ===
+                      item.name
+                        ? "bg-[#BFFF00]"
+                        : "bg-[#F5F5F5]"
+                    }`}
+                  >
+                    {
+                      item.symbol
+                    }{" "}
+                    {appLanguage ===
+                    "ko"
+                      ? item.ko
+                      : item.name}
+                  </button>
+                )
+              )}
             </div>
 
             <p className="font-pretendard mb-3 mt-6 text-[14px] font-semibold">
-              {t.yourLevel}
+              {
+                t.yourLevel
+              }
             </p>
 
             <div className="grid grid-cols-3 gap-2">
-              {levels.map((item) => (
-                <button
-                  key={item.value}
-                  type="button"
-                  onClick={() =>
-                    setLevel(item.value)
-                  }
-                  className={`font-pretendard h-[46px] rounded-[14px] text-[12px] font-semibold ${
-                    level === item.value
-                      ? "bg-[#BFFF00]"
-                      : "bg-[#F5F5F5]"
-                  }`}
-                >
-                  {appLanguage === "ko"
-                    ? item.ko
-                    : item.value}
-                </button>
-              ))}
+              {levels.map(
+                (
+                  item
+                ) => (
+                  <button
+                    key={
+                      item.value
+                    }
+                    type="button"
+                    onClick={() =>
+                      setLevel(
+                        item.value
+                      )
+                    }
+                    className={`font-pretendard h-[46px] rounded-[14px] text-[12px] font-semibold ${
+                      level ===
+                      item.value
+                        ? "bg-[#BFFF00]"
+                        : "bg-[#F5F5F5]"
+                    }`}
+                  >
+                    {appLanguage ===
+                    "ko"
+                      ? item.ko
+                      : item.value}
+                  </button>
+                )
+              )}
             </div>
 
             <p className="font-pretendard mb-3 mt-6 text-[14px] font-semibold">
-              {t.learningGoal}
+              {
+                t.learningGoal
+              }
             </p>
 
             <div className="grid grid-cols-2 gap-2">
-              {goals.map((item) => (
-                <button
-                  key={item.value}
-                  type="button"
-                  onClick={() =>
-                    setGoal(item.value)
-                  }
-                  className={`font-pretendard h-[46px] rounded-[14px] text-[13px] font-semibold ${
-                    goal === item.value
-                      ? "bg-[#BFFF00]"
-                      : "bg-[#F5F5F5]"
-                  }`}
-                >
-                  {appLanguage === "ko"
-                    ? item.ko
-                    : item.value}
-                </button>
-              ))}
+              {goals.map(
+                (
+                  item
+                ) => (
+                  <button
+                    key={
+                      item.value
+                    }
+                    type="button"
+                    onClick={() =>
+                      setGoal(
+                        item.value
+                      )
+                    }
+                    className={`font-pretendard h-[46px] rounded-[14px] text-[13px] font-semibold ${
+                      goal ===
+                      item.value
+                        ? "bg-[#BFFF00]"
+                        : "bg-[#F5F5F5]"
+                    }`}
+                  >
+                    {appLanguage ===
+                    "ko"
+                      ? item.ko
+                      : item.value}
+                  </button>
+                )
+              )}
             </div>
           </div>
 
-          {/* NOTIFICATION */}
+          {/* NOTIFICATIONS */}
 
           <p
             className={`${sectionTitleClass} mb-3 mt-7`}
           >
-            {t.notificationsTitle}
+            {
+              t.notificationsTitle
+            }
           </p>
 
           <div className="overflow-hidden rounded-[24px] bg-white">
             <div className="flex items-center justify-between border-b border-black/[0.05] p-5">
               <div>
                 <p className="font-pretendard text-[15px] font-semibold">
-                  {t.notifications}
+                  {
+                    t.notifications
+                  }
                 </p>
 
                 <p className="font-pretendard mt-1 text-[12px] text-[#202020]/40">
-                  {t.notificationsDesc}
+                  {
+                    t.notificationsDesc
+                  }
                 </p>
               </div>
 
               <Toggle
-                value={notifications}
+                value={
+                  notifications
+                }
                 onChange={() =>
                   setNotifications(
-                    !notifications
+                    (
+                      previous
+                    ) =>
+                      !previous
                   )
                 }
               />
@@ -2530,18 +3748,29 @@ export default function Home() {
             <div className="flex items-center justify-between border-b border-black/[0.05] p-5">
               <div>
                 <p className="font-pretendard text-[15px] font-semibold">
-                  {t.sound}
+                  {
+                    t.sound
+                  }
                 </p>
 
                 <p className="font-pretendard mt-1 text-[12px] text-[#202020]/40">
-                  {t.soundDesc}
+                  {
+                    t.soundDesc
+                  }
                 </p>
               </div>
 
               <Toggle
-                value={sound}
+                value={
+                  sound
+                }
                 onChange={() =>
-                  setSound(!sound)
+                  setSound(
+                    (
+                      previous
+                    ) =>
+                      !previous
+                  )
                 }
               />
             </div>
@@ -2549,28 +3778,45 @@ export default function Home() {
             <div className="flex items-center justify-between p-5">
               <div>
                 <p className="font-pretendard text-[15px] font-semibold">
-                  {t.vibration}
+                  {
+                    t.vibration
+                  }
                 </p>
 
                 <p className="font-pretendard mt-1 text-[12px] text-[#202020]/40">
-                  {t.vibrationDesc}
+                  {
+                    t.vibrationDesc
+                  }
                 </p>
               </div>
 
               <Toggle
-                value={vibration}
+                value={
+                  vibration
+                }
                 onChange={() => {
-                  const next =
-                    !vibration;
+                  setVibration(
+                    (
+                      previous
+                    ) => {
+                      const next =
+                        !previous;
 
-                  setVibration(next);
+                      if (
+                        next &&
+                        typeof navigator !==
+                          "undefined" &&
+                        "vibrate" in
+                          navigator
+                      ) {
+                        navigator.vibrate(
+                          80
+                        );
+                      }
 
-                  if (
-                    next &&
-                    "vibrate" in navigator
-                  ) {
-                    navigator.vibrate(80);
-                  }
+                      return next;
+                    }
+                  );
                 }}
               />
             </div>
@@ -2581,48 +3827,29 @@ export default function Home() {
           <p
             className={`${sectionTitleClass} mb-3 mt-7`}
           >
-            {t.app}
+            {
+              t.app
+            }
           </p>
 
           <div className="overflow-hidden rounded-[24px] bg-white">
             <button
               type="button"
-              onClick={() =>
-                setStep("character")
-              }
-              className="font-pretendard flex w-full items-center justify-between border-b border-black/[0.05] p-5"
-            >
-              <span className="font-semibold">
-                {t.editCharacter}
-              </span>
-
-              <span className="text-[#202020]/30">
-                ›
-              </span>
-            </button>
-
-            <button
-              type="button"
               onClick={() => {
-                const confirmed =
-                  window.confirm(
-                    appLanguage === "ko"
-                      ? "학습 언어, 레벨, 목표, 캐릭터를 처음부터 다시 설정할까요?"
-                      : "Set up your language, level, goal and character again?"
-                  );
+                setCharacterReturnStep(
+                  "settings"
+                );
 
-                if (!confirmed) return;
-
-                setOnboardingComplete(false);
-                setLanguage(null);
-                setLevel(null);
-                setGoal(null);
-                setStep("language");
+                setStep(
+                  "character"
+                );
               }}
               className="font-pretendard flex w-full items-center justify-between border-b border-black/[0.05] p-5"
             >
               <span className="font-semibold">
-                {t.setupAgain}
+                {
+                  t.editCharacter
+                }
               </span>
 
               <span className="text-[#202020]/30">
@@ -2635,40 +3862,145 @@ export default function Home() {
               onClick={() => {
                 const confirmed =
                   window.confirm(
-                    appLanguage === "ko"
+                    appLanguage ===
+                      "ko"
+                      ? "학습 언어, 레벨, 목표, 캐릭터를 처음부터 다시 설정할까요?"
+                      : "Set up your language, level, goal and character again?"
+                  );
+
+                if (
+                  !confirmed
+                ) {
+                  return;
+                }
+
+                setOnboardingComplete(
+                  false
+                );
+
+                setLanguage(
+                  null
+                );
+
+                setLevel(
+                  null
+                );
+
+                setGoal(
+                  null
+                );
+
+                setCharacterReturnStep(
+                  "info"
+                );
+
+                setStep(
+                  "language"
+                );
+              }}
+              className="font-pretendard flex w-full items-center justify-between border-b border-black/[0.05] p-5"
+            >
+              <span className="font-semibold">
+                {
+                  t.setupAgain
+                }
+              </span>
+
+              <span className="text-[#202020]/30">
+                ›
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                const confirmed =
+                  window.confirm(
+                    appLanguage ===
+                      "ko"
                       ? "이 기기에 저장된 PlaBla 데이터를 모두 초기화할까요?"
                       : "Reset all PlaBla data stored on this device?"
                   );
 
-                if (!confirmed) return;
+                if (
+                  !confirmed
+                ) {
+                  return;
+                }
 
                 localStorage.removeItem(
                   "plabla-settings"
                 );
 
-                setAppLanguage("en");
-                setLanguage(null);
-                setLevel(null);
-                setGoal(null);
-                setBodyColor("#C7F238");
-                setLeftEye("P");
-                setRightEye("B");
-                setDisplayName("Bunnies");
-                setNotifications(true);
-                setSound(true);
-                setVibration(true);
-                setOnboardingComplete(false);
-                setStep("start");
+                setAppLanguage(
+                  "en"
+                );
+
+                setLanguage(
+                  null
+                );
+
+                setLevel(
+                  null
+                );
+
+                setGoal(
+                  null
+                );
+
+                setBodyColor(
+                  "#C7F238"
+                );
+
+                setLeftEye(
+                  "P"
+                );
+
+                setRightEye(
+                  "B"
+                );
+
+                setDisplayName(
+                  "Bunnies"
+                );
+
+                setNotifications(
+                  true
+                );
+
+                setSound(
+                  true
+                );
+
+                setVibration(
+                  true
+                );
+
+                setOnboardingComplete(
+                  false
+                );
+
+                setCharacterReturnStep(
+                  "info"
+                );
+
+                setStep(
+                  "start"
+                );
               }}
               className="font-pretendard flex w-full items-center justify-between p-5"
             >
               <div className="text-left">
                 <p className="font-semibold text-red-500">
-                  {t.resetAppData}
+                  {
+                    t.resetAppData
+                  }
                 </p>
 
                 <p className="mt-1 text-[12px] text-[#202020]/35">
-                  {t.resetAppDataDesc}
+                  {
+                    t.resetAppDataDesc
+                  }
                 </p>
               </div>
 
@@ -2683,7 +4015,19 @@ export default function Home() {
           </p>
         </div>
 
-        <BottomNav current="settings" />
+        <BottomNav
+          current="settings"
+          appLanguage={
+            appLanguage
+          }
+          onChange={(
+            tab
+          ) =>
+            setStep(
+              tab
+            )
+          }
+        />
       </MobileFrame>
     );
   }

@@ -1,7 +1,14 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useMemo, useState } from "react";
+import {
+  PointerEvent as ReactPointerEvent,
+  ReactNode,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import * as THREE from "three";
 
 import { Canvas, useLoader } from "@react-three/fiber";
@@ -15,11 +22,23 @@ import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader.js";
 
 type Step =
   | "start"
+  | "app-language"
   | "language"
   | "info"
   | "character"
+  | "home"
   | "space"
-  | "landscape";
+  | "landscape"
+  | "profile"
+  | "settings";
+
+type AppTab =
+  | "home"
+  | "space"
+  | "profile"
+  | "settings";
+
+type AppLanguage = "en" | "ko";
 
 type Language =
   | "Korean"
@@ -29,9 +48,16 @@ type Language =
   | "Spanish"
   | "French";
 
-type Level = "Beginner" | "Intermediate" | "Advanced";
+type Level =
+  | "Beginner"
+  | "Intermediate"
+  | "Advanced";
 
-type Goal = "Conversation" | "Travel" | "Study" | "Culture";
+type Goal =
+  | "Conversation"
+  | "Travel"
+  | "Study"
+  | "Culture";
 
 type Space =
   | "Mafia"
@@ -42,270 +68,776 @@ type Space =
   | "Free Talk";
 
 type CharacterTab = "color" | "eyes";
+
 type EyeTarget = "left" | "right";
+
+/* =====================================================
+   TRANSLATIONS
+===================================================== */
+
+const translations = {
+  en: {
+    chooseAppLanguage: "Choose your app language.",
+    chooseAppLanguageSub:
+      "You can change this anytime in Settings.",
+
+    appLanguage: "App language",
+    english: "English",
+    korean: "한국어",
+
+    chooseLanguage: "Choose the language\nyou want to learn.",
+    chooseLanguageSub: "Select one language to continue.",
+
+    tellUs: "Tell us about\nyour learning.",
+    tellUsSub:
+      "This helps us find the right experience for you.",
+
+    yourLevel: "Your level",
+    learningGoal: "Learning goal",
+
+    makeItYours: "Make it yours.",
+    createCharacter: "Create your PlaBla character.",
+    dragRotate: "Drag left or right to rotate",
+
+    color: "Color",
+    eyes: "Eyes",
+    bodyColor: "Body color",
+    leftEye: "Left eye",
+    rightEye: "Right eye",
+    left: "Left",
+    right: "Right",
+    suggestions: "Suggestions",
+
+    next: "Next",
+    continue: "Continue",
+
+    hi: "Hi",
+    readyToTalk: "Ready to talk?",
+    learning: "Learning",
+    goal: "Goal",
+    jumpIntoSpace: "Jump into a space",
+    seeAll: "See all",
+
+    spacesTitle: "What would you\nlike to do?",
+    spacesSub: "Choose a space and start talking.",
+
+    entering: "You're entering",
+
+    yourProfile: "Your profile.",
+    profileSub: "Your PlaBla identity and learning setup.",
+    language: "Language",
+    level: "Level",
+    editCharacter: "Edit character",
+
+    settings: "Settings.",
+    settingsSub: "Adjust your PlaBla experience.",
+
+    account: "Account",
+    displayName: "Display name",
+    edit: "Edit",
+    save: "Save",
+    manageAccount: "Manage account",
+    localPrototype: "Local prototype account",
+
+    general: "General",
+
+    learningSettings: "Learning",
+    learningLanguage: "Learning language",
+
+    notificationsSection: "Notifications",
+    notifications: "Notifications",
+    notificationsDesc: "Space invites and activity alerts",
+    sound: "Sound",
+    soundDesc: "Interface and game sounds",
+    vibration: "Vibration",
+    vibrationDesc: "Haptic feedback on supported devices",
+
+    app: "App",
+    restartOnboarding: "Restart onboarding",
+    resetAppData: "Reset app data",
+    resetAppDataDesc: "Erase local PlaBla settings",
+
+    open: "Open",
+    restart: "Restart",
+    reset: "Reset",
+
+    home: "Home",
+    spaces: "Spaces",
+    profile: "Profile",
+    settingsTab: "Settings",
+
+    customColor: "Custom color",
+    customColorSub: "Preview it on your character first.",
+    cancel: "Cancel",
+    select: "Select",
+
+    leftRightHelp:
+      "Left and right are based on what you see on the screen.",
+
+    appLanguageChanged: "App language updated.",
+  },
+
+  ko: {
+    chooseAppLanguage: "앱 언어를 선택해주세요.",
+    chooseAppLanguageSub:
+      "설정에서 언제든 다시 변경할 수 있어요.",
+
+    appLanguage: "앱 언어",
+    english: "English",
+    korean: "한국어",
+
+    chooseLanguage: "배우고 싶은\n언어를 선택해주세요.",
+    chooseLanguageSub: "학습할 언어 하나를 선택해주세요.",
+
+    tellUs: "학습 정보를\n알려주세요.",
+    tellUsSub:
+      "나에게 맞는 대화 경험을 추천하는 데 활용돼요.",
+
+    yourLevel: "나의 레벨",
+    learningGoal: "학습 목표",
+
+    makeItYours: "나만의 캐릭터.",
+    createCharacter: "PlaBla 캐릭터를 만들어보세요.",
+    dragRotate: "좌우로 드래그하여 회전",
+
+    color: "컬러",
+    eyes: "눈",
+    bodyColor: "바디 컬러",
+    leftEye: "왼쪽 눈",
+    rightEye: "오른쪽 눈",
+    left: "왼쪽",
+    right: "오른쪽",
+    suggestions: "추천",
+
+    next: "다음",
+    continue: "계속하기",
+
+    hi: "안녕하세요",
+    readyToTalk: "대화를 시작해볼까요?",
+    learning: "학습 중",
+    goal: "목표",
+    jumpIntoSpace: "바로 참여하기",
+    seeAll: "전체 보기",
+
+    spacesTitle: "어떤 대화를\n시작해볼까요?",
+    spacesSub: "공간을 선택하고 바로 대화를 시작해보세요.",
+
+    entering: "입장 중",
+
+    yourProfile: "나의 프로필.",
+    profileSub: "PlaBla 캐릭터와 학습 설정을 확인해보세요.",
+    language: "학습 언어",
+    level: "레벨",
+    editCharacter: "캐릭터 수정",
+
+    settings: "설정",
+    settingsSub: "PlaBla 환경을 원하는 대로 설정해보세요.",
+
+    account: "계정",
+    displayName: "프로필 이름",
+    edit: "수정",
+    save: "저장",
+    manageAccount: "계정 관리",
+    localPrototype: "현재 기기에 저장된 프로토타입 계정",
+
+    general: "일반",
+
+    learningSettings: "학습 설정",
+    learningLanguage: "학습 언어",
+
+    notificationsSection: "알림 설정",
+    notifications: "알림",
+    notificationsDesc: "공간 초대 및 활동 알림",
+    sound: "사운드",
+    soundDesc: "인터페이스 및 게임 소리",
+    vibration: "진동",
+    vibrationDesc: "지원되는 기기에서 햅틱 피드백 사용",
+
+    app: "앱",
+    restartOnboarding: "온보딩 다시 시작",
+    resetAppData: "앱 데이터 초기화",
+    resetAppDataDesc: "이 기기에 저장된 PlaBla 설정 삭제",
+
+    open: "열기",
+    restart: "다시 시작",
+    reset: "초기화",
+
+    home: "홈",
+    spaces: "공간",
+    profile: "프로필",
+    settingsTab: "설정",
+
+    customColor: "사용자 지정 컬러",
+    customColorSub: "캐릭터에 적용된 모습을 먼저 확인해보세요.",
+    cancel: "취소",
+    select: "선택",
+
+    leftRightHelp:
+      "왼쪽과 오른쪽은 화면에서 보이는 방향을 기준으로 해요.",
+
+    appLanguageChanged: "앱 언어가 변경되었습니다.",
+  },
+};
 
 /* =====================================================
    DATA
 ===================================================== */
 
-const languages: { name: Language; symbol: string }[] = [
-  { name: "Korean", symbol: "한" },
-  { name: "English", symbol: "A" },
-  { name: "Japanese", symbol: "あ" },
-  { name: "Chinese", symbol: "中" },
-  { name: "Spanish", symbol: "Ñ" },
-  { name: "French", symbol: "É" },
+const languages: {
+  name: Language;
+  symbol: string;
+  ko: string;
+}[] = [
+  {
+    name: "Korean",
+    symbol: "한",
+    ko: "한국어",
+  },
+  {
+    name: "English",
+    symbol: "A",
+    ko: "영어",
+  },
+  {
+    name: "Japanese",
+    symbol: "あ",
+    ko: "일본어",
+  },
+  {
+    name: "Chinese",
+    symbol: "中",
+    ko: "중국어",
+  },
+  {
+    name: "Spanish",
+    symbol: "Ñ",
+    ko: "스페인어",
+  },
+  {
+    name: "French",
+    symbol: "É",
+    ko: "프랑스어",
+  },
 ];
 
-const levels: Level[] = ["Beginner", "Intermediate", "Advanced"];
-const goals: Goal[] = ["Conversation", "Travel", "Study", "Culture"];
+const levels: {
+  value: Level;
+  ko: string;
+}[] = [
+  {
+    value: "Beginner",
+    ko: "초급",
+  },
+  {
+    value: "Intermediate",
+    ko: "중급",
+  },
+  {
+    value: "Advanced",
+    ko: "고급",
+  },
+];
+
+const goals: {
+  value: Goal;
+  ko: string;
+}[] = [
+  {
+    value: "Conversation",
+    ko: "회화",
+  },
+  {
+    value: "Travel",
+    ko: "여행",
+  },
+  {
+    value: "Study",
+    ko: "학습",
+  },
+  {
+    value: "Culture",
+    ko: "문화",
+  },
+];
 
 const bodyColors = [
-  { name: "Lime", value: "#C7F238" },
-  { name: "Mint", value: "#74DDD1" },
-  { name: "Blue", value: "#78C0F0" },
-  { name: "Pink", value: "#EE98CF" },
-  { name: "Yellow", value: "#F7E66A" },
-  { name: "Purple", value: "#B8A4F4" },
-  { name: "Peach", value: "#FFB58E" },
+  {
+    name: "Lime",
+    value: "#C7F238",
+  },
+  {
+    name: "Mint",
+    value: "#74DDD1",
+  },
+  {
+    name: "Blue",
+    value: "#78C0F0",
+  },
+  {
+    name: "Pink",
+    value: "#EE98CF",
+  },
+  {
+    name: "Yellow",
+    value: "#F7E66A",
+  },
+  {
+    name: "Purple",
+    value: "#B8A4F4",
+  },
+  {
+    name: "Peach",
+    value: "#FFB58E",
+  },
 ];
 
-const eyeSuggestions = ["P", "B", "の", "中", "あ", "ㅎ", "Ω", "丸"];
+const eyeSuggestions = [
+  "P",
+  "B",
+  "の",
+  "中",
+  "あ",
+  "ㅎ",
+  "Ω",
+  "丸",
+];
 
 const spaces: {
   name: Space;
+  ko: string;
   image: string;
   people: string;
   description: string;
+  koDescription: string;
 }[] = [
   {
     name: "Mafia",
+    ko: "마피아",
     image: "/mafia.png",
     people: "6 / 8",
     description: "Discuss, suspect, and defend.",
+    koDescription: "의심하고, 토론하고, 서로를 설득해보세요.",
   },
   {
     name: "Escape Room",
+    ko: "방탈출",
     image: "/escape-room.png",
     people: "4 / 6",
     description: "Find clues and solve together.",
+    koDescription: "단서를 찾고 함께 문제를 해결해보세요.",
   },
   {
     name: "Describe & Guess",
+    ko: "설명하고 맞히기",
     image: "/describe-guess.png",
     people: "5 / 8",
     description: "Describe it and let others guess.",
+    koDescription: "설명만 듣고 정답을 맞혀보세요.",
   },
   {
     name: "Shadowing",
+    ko: "쉐도잉",
     image: "/shadowing.png",
     people: "4 / 6",
     description: "Listen, repeat, and practice together.",
+    koDescription: "듣고 따라 말하며 함께 연습해보세요.",
   },
   {
     name: "Balance Game",
+    ko: "밸런스 게임",
     image: "/balance-game.png",
     people: "6 / 10",
     description: "Choose a side and explain why.",
+    koDescription: "하나를 선택하고 이유를 이야기해보세요.",
   },
   {
     name: "Free Talk",
+    ko: "자유 대화",
     image: "/free-talk.png",
     people: "7 / 10",
     description: "Relax and talk freely.",
+    koDescription: "부담 없이 자유롭게 이야기해보세요.",
   },
 ];
 
 /* =====================================================
-   FONT HELPERS
+   HELPERS
 ===================================================== */
 
-function getFredokaFont() {
-  if (typeof window === "undefined") {
-    return "Arial";
+function hsvToHex(
+  h: number,
+  s: number,
+  v: number
+) {
+  const c = v * s;
+
+  const x =
+    c *
+    (1 -
+      Math.abs(
+        ((h / 60) % 2) - 1
+      ));
+
+  const m = v - c;
+
+  let r = 0;
+  let g = 0;
+  let b = 0;
+
+  if (h < 60) {
+    r = c;
+    g = x;
+  } else if (h < 120) {
+    r = x;
+    g = c;
+  } else if (h < 180) {
+    g = c;
+    b = x;
+  } else if (h < 240) {
+    g = x;
+    b = c;
+  } else if (h < 300) {
+    r = x;
+    b = c;
+  } else {
+    r = c;
+    b = x;
   }
 
-  const value = getComputedStyle(document.documentElement)
-    .getPropertyValue("--font-fredoka")
-    .trim();
+  const toHex = (
+    value: number
+  ) =>
+    Math.round(
+      (value + m) * 255
+    )
+      .toString(16)
+      .padStart(2, "0");
 
-  return value || '"Arial Rounded MT Bold"';
+  return (
+    "#" +
+    toHex(r) +
+    toHex(g) +
+    toHex(b)
+  ).toUpperCase();
 }
 
-function getPretendardFont() {
-  if (typeof window === "undefined") {
-    return "sans-serif";
+function hueToHex(
+  hue: number
+) {
+  return hsvToHex(
+    hue,
+    1,
+    1
+  );
+}
+
+function hexToHsv(
+  hex: string
+) {
+  const clean =
+    hex.replace("#", "");
+
+  const r =
+    parseInt(
+      clean.slice(0, 2),
+      16
+    ) / 255;
+
+  const g =
+    parseInt(
+      clean.slice(2, 4),
+      16
+    ) / 255;
+
+  const b =
+    parseInt(
+      clean.slice(4, 6),
+      16
+    ) / 255;
+
+  const max =
+    Math.max(
+      r,
+      g,
+      b
+    );
+
+  const min =
+    Math.min(
+      r,
+      g,
+      b
+    );
+
+  const delta =
+    max - min;
+
+  let h = 0;
+
+  if (delta !== 0) {
+    if (max === r) {
+      h =
+        60 *
+        (((g - b) /
+          delta) %
+          6);
+    } else if (
+      max === g
+    ) {
+      h =
+        60 *
+        ((b - r) /
+          delta +
+          2);
+    } else {
+      h =
+        60 *
+        ((r - g) /
+          delta +
+          4);
+    }
   }
 
-  return '"Pretendard Variable", Pretendard, sans-serif';
+  if (h < 0) {
+    h += 360;
+  }
+
+  return {
+    h,
+    s:
+      max === 0
+        ? 0
+        : delta /
+          max,
+    v: max,
+  };
 }
 
 /* =====================================================
-   EYE TEXTURE
+   EYES
 ===================================================== */
 
-function createEyeTexture(text: string, fredokaFont: string) {
-  const canvas = document.createElement("canvas");
+function createEyeTexture(
+  text: string
+) {
+  const canvas =
+    document.createElement(
+      "canvas"
+    );
+
   canvas.width = 1024;
   canvas.height = 1024;
 
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return null;
+  const context =
+    canvas.getContext(
+      "2d"
+    );
 
-  ctx.clearRect(0, 0, 1024, 1024);
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.lineJoin = "round";
-  ctx.lineCap = "round";
+  if (!context) {
+    return null;
+  }
 
-  const isLatin = /^[A-Za-z0-9]$/.test(text);
-  const isJapanese = /[\u3040-\u30ff]/.test(text);
-  const isChinese = /[\u3400-\u9fff]/.test(text);
-  const isKorean = /[\uac00-\ud7af\u3130-\u318f]/.test(text);
+  context.clearRect(
+    0,
+    0,
+    1024,
+    1024
+  );
 
-  let fontFamily = getPretendardFont();
-  let fontSize = 520;
-  let fontWeight = 620;
-  let fillColor = "#2f2f2f";
-  let strokeColor = "#3b3b3b";
-  let strokeWidth = 0;
+  context.textAlign =
+    "center";
 
-  // 영어/숫자
+  context.textBaseline =
+    "middle";
+
+  context.lineJoin =
+    "round";
+
+  context.lineCap =
+    "round";
+
+  const isLatin =
+    /^[A-Za-z0-9]$/.test(
+      text
+    );
+
+  const isJapanese =
+    /[\u3040-\u30ff]/.test(
+      text
+    );
+
+  const isChinese =
+    /[\u3400-\u9fff]/.test(
+      text
+    );
+
+  const isKorean =
+    /[\uac00-\ud7af\u3130-\u318f]/.test(
+      text
+    );
+
+  let fontSize = 590;
+
   if (isLatin) {
-    fontFamily = fredokaFont;
-    fontSize = 560;
-    fontWeight = 540;
-    fillColor = "#323232";
-    strokeColor = "#3a3a3a";
-    strokeWidth = 1.6;
+    fontSize = 610;
   }
 
-  // 일본어
   if (isJapanese) {
-    fontFamily = getPretendardFont();
-    fontSize = 540;
-    fontWeight = 650;
-    fillColor = "#2f2f2f";
-    strokeColor = "#393939";
-    strokeWidth = 1.2;
+    fontSize = 580;
   }
 
-  // 한자
   if (isChinese) {
-    fontFamily = getPretendardFont();
-    fontSize = 520;
-    fontWeight = 680;
-    fillColor = "#2f2f2f";
-    strokeColor = "#393939";
-    strokeWidth = 1.1;
+    fontSize = 545;
   }
 
-  // 한글
   if (isKorean) {
-    fontFamily = getPretendardFont();
-    fontSize = 530;
-    fontWeight = 670;
-    fillColor = "#2f2f2f";
-    strokeColor = "#393939";
-    strokeWidth = 1.1;
+    fontSize = 565;
   }
 
-  ctx.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
+  context.font =
+    `650 ${fontSize}px ` +
+    `"Pretendard Variable", ` +
+    `Pretendard, ` +
+    `Arial, sans-serif`;
 
-  // 살짝 부드러운 느낌
-  ctx.shadowColor = "rgba(0,0,0,0.08)";
-  ctx.shadowBlur = 2;
-  ctx.shadowOffsetX = 0;
-  ctx.shadowOffsetY = 1;
+  context.fillStyle =
+    "#272727";
 
-  if (strokeWidth > 0) {
-    ctx.strokeStyle = strokeColor;
-    ctx.lineWidth = strokeWidth;
-    ctx.strokeText(text || " ", 512, 536);
-  }
+  context.strokeStyle =
+    "#272727";
 
-  ctx.fillStyle = fillColor;
-  ctx.fillText(text || " ", 512, 536);
+  context.lineWidth = 4;
 
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.colorSpace = THREE.SRGBColorSpace;
-  texture.minFilter = THREE.LinearFilter;
-  texture.magFilter = THREE.LinearFilter;
-  texture.generateMipmaps = true;
-  texture.needsUpdate = true;
+  context.strokeText(
+    text || " ",
+    512,
+    530
+  );
+
+  context.fillText(
+    text || " ",
+    512,
+    530
+  );
+
+  const texture =
+    new THREE.CanvasTexture(
+      canvas
+    );
+
+  texture.colorSpace =
+    THREE.SRGBColorSpace;
+
+  texture.minFilter =
+    THREE.LinearFilter;
+
+  texture.magFilter =
+    THREE.LinearFilter;
+
+  texture.needsUpdate =
+    true;
 
   return texture;
 }
-
-/* =====================================================
-   EYE MESH
-===================================================== */
 
 function Eye3D({
   text,
   position,
   rotation,
-  scale = 1,
 }: {
   text: string;
-  position: [number, number, number];
-  rotation: [number, number, number];
-  scale?: number;
+
+  position: [
+    number,
+    number,
+    number
+  ];
+
+  rotation: [
+    number,
+    number,
+    number
+  ];
 }) {
-  const [texture, setTexture] = useState<THREE.CanvasTexture | null>(null);
+  const [
+    texture,
+    setTexture,
+  ] =
+    useState<
+      THREE.CanvasTexture | null
+    >(null);
 
   useEffect(() => {
     let active = true;
 
-    async function buildTexture() {
+    async function create() {
       await document.fonts.ready;
 
-      const fredoka = getFredokaFont();
-
-      try {
-        await document.fonts.load(`540 64px ${fredoka}`);
-        await document.fonts.load(`650 64px ${getPretendardFont()}`);
-      } catch {
-        //
+      if (!active) {
+        return;
       }
 
-      if (!active) return;
+      const newTexture =
+        createEyeTexture(
+          text
+        );
 
-      const nextTexture = createEyeTexture(text, fredoka);
-      setTexture((prev) => {
-        prev?.dispose();
-        return nextTexture;
-      });
+      setTexture(
+        (
+          oldTexture
+        ) => {
+          oldTexture?.dispose();
+
+          return newTexture;
+        }
+      );
     }
 
-    buildTexture();
+    create();
 
     return () => {
       active = false;
     };
   }, [text]);
 
-  useEffect(() => {
-    return () => {
-      texture?.dispose();
-    };
-  }, [texture]);
-
-  if (!texture) return null;
+  if (!texture) {
+    return null;
+  }
 
   return (
-    <mesh position={position} rotation={rotation} renderOrder={50} scale={scale}>
-      <planeGeometry args={[0.28, 0.28]} />
+    <mesh
+      position={
+        position
+      }
+      rotation={
+        rotation
+      }
+      renderOrder={
+        50
+      }
+    >
+      <planeGeometry
+        args={[
+          0.35,
+          0.35,
+        ]}
+      />
+
       <meshBasicMaterial
-        map={texture}
+        map={
+          texture
+        }
         transparent
-        alphaTest={0.01}
-        depthWrite={false}
-        depthTest
-        side={THREE.DoubleSide}
+        alphaTest={
+          0.005
+        }
+        depthWrite={
+          false
+        }
         polygonOffset
-        polygonOffsetFactor={-4}
-        polygonOffsetUnits={-4}
+        polygonOffsetFactor={
+          -4
+        }
       />
     </mesh>
   );
@@ -324,71 +856,625 @@ function CharacterModel({
   leftEye: string;
   rightEye: string;
 }) {
-  const materials = useLoader(MTLLoader, "/mbd_character_eyeX.mtl");
+  const materials =
+    useLoader(
+      MTLLoader,
+      "/mbd_character_eyeX.mtl"
+    );
+
   materials.preload();
 
-  const object = useLoader(OBJLoader, "/mbd_character_eyeX.obj", (loader) => {
-    loader.setMaterials(materials);
-  });
-
-  const model = useMemo(() => {
-    const cloned = object.clone(true);
-
-    cloned.traverse((child) => {
-      if (!(child instanceof THREE.Mesh)) return;
-
-      if (Array.isArray(child.material)) {
-        child.material = child.material.map((material) => {
-          const copy = material.clone();
-          if (copy.name === "bodyColor_Green") {
-            copy.color.set(bodyColor);
-          }
-          return copy;
-        });
-      } else if (child.material) {
-        const copy = child.material.clone();
-        if (copy.name === "bodyColor_Green") {
-          copy.color.set(bodyColor);
-        }
-        child.material = copy;
+  const object =
+    useLoader(
+      OBJLoader,
+      "/mbd_character_eyeX.obj",
+      (
+        loader
+      ) => {
+        loader.setMaterials(
+          materials
+        );
       }
-    });
+    );
 
-    return cloned;
-  }, [object, bodyColor]);
+  const model =
+    useMemo(() => {
+      const cloned =
+        object.clone(
+          true
+        );
 
-  /*
-    viewer 기준
-    왼쪽 눈 / 오른쪽 눈
-    간격 너무 넓지 않게 다시 좁힘
-    곡면에 맞게 미세하게 각도 조정
-  */
-  const viewerLeftEyePosition: [number, number, number] = [-27.60, 1.43, -23.72];
-  const viewerRightEyePosition: [number, number, number] = [-27.72, 1.43, -23.72];
+      cloned.traverse(
+        (
+          child
+        ) => {
+          if (
+            !(
+              child instanceof
+              THREE.Mesh
+            )
+          ) {
+            return;
+          }
 
-  const viewerLeftEyeRotation: [number, number, number] = [0, Math.PI - 0.055, 0];
-  const viewerRightEyeRotation: [number, number, number] = [0, Math.PI + 0.055, 0];
+          const change =
+            (
+              material: THREE.Material
+            ) => {
+              const copy =
+                material.clone();
+
+              if (
+                "color" in
+                  copy &&
+                copy.name ===
+                  "bodyColor_Green"
+              ) {
+                (
+                  copy as THREE.MeshPhongMaterial
+                ).color.set(
+                  bodyColor
+                );
+              }
+
+              return copy;
+            };
+
+          if (
+            Array.isArray(
+              child.material
+            )
+          ) {
+            child.material =
+              child.material.map(
+                change
+              );
+          } else {
+            child.material =
+              change(
+                child.material
+              );
+          }
+        }
+      );
+
+      return cloned;
+    }, [
+      object,
+      bodyColor,
+    ]);
 
   return (
     <Center>
-      <group scale={0.64} position={[0, 0.18, 0]} rotation={[0, Math.PI, 0]}>
-        <primitive object={model} />
-
-        <Eye3D
-          text={leftEye}
-          position={viewerLeftEyePosition}
-          rotation={viewerLeftEyeRotation}
-          scale={1}
+      <group
+        scale={
+          0.64
+        }
+        position={[
+          0,
+          0.18,
+          0,
+        ]}
+        rotation={[
+          0,
+          Math.PI,
+          0,
+        ]}
+      >
+        <primitive
+          object={
+            model
+          }
         />
 
         <Eye3D
-          text={rightEye}
-          position={viewerRightEyePosition}
-          rotation={viewerRightEyeRotation}
-          scale={1}
+          text={
+            leftEye
+          }
+          position={[
+            -27.46,
+            1.43,
+            -23.72,
+          ]}
+          rotation={[
+            0,
+            Math.PI -
+              0.03,
+            0,
+          ]}
+        />
+
+        <Eye3D
+          text={
+            rightEye
+          }
+          position={[
+            -27.86,
+            1.43,
+            -23.72,
+          ]}
+          rotation={[
+            0,
+            Math.PI +
+              0.03,
+            0,
+          ]}
         />
       </group>
     </Center>
+  );
+}
+
+function CharacterView({
+  bodyColor,
+  leftEye,
+  rightEye,
+  rotate = false,
+}: {
+  bodyColor: string;
+  leftEye: string;
+  rightEye: string;
+  rotate?: boolean;
+}) {
+  return (
+    <Canvas
+      camera={{
+        position: [
+          0,
+          0.18,
+          3.8,
+        ],
+        fov: 32,
+      }}
+      gl={{
+        antialias:
+          true,
+      }}
+    >
+      <ambientLight
+        intensity={
+          2.45
+        }
+      />
+
+      <directionalLight
+        position={[
+          4,
+          6,
+          6,
+        ]}
+        intensity={
+          2.5
+        }
+      />
+
+      <directionalLight
+        position={[
+          -4,
+          2,
+          3,
+        ]}
+        intensity={
+          1.2
+        }
+      />
+
+      <CharacterModel
+        bodyColor={
+          bodyColor
+        }
+        leftEye={
+          leftEye
+        }
+        rightEye={
+          rightEye
+        }
+      />
+
+      {rotate && (
+        <OrbitControls
+          enablePan={
+            false
+          }
+          enableZoom={
+            false
+          }
+          minPolarAngle={
+            Math.PI /
+            2
+          }
+          maxPolarAngle={
+            Math.PI /
+            2
+          }
+          minAzimuthAngle={
+            -0.78
+          }
+          maxAzimuthAngle={
+            0.78
+          }
+          target={[
+            0,
+            0.2,
+            0,
+          ]}
+        />
+      )}
+    </Canvas>
+  );
+}
+
+/* =====================================================
+   COLOR PICKER
+===================================================== */
+
+function CustomColorPicker({
+  initialColor,
+  leftEye,
+  rightEye,
+  appLanguage,
+  onCancel,
+  onSelect,
+}: {
+  initialColor: string;
+  leftEye: string;
+  rightEye: string;
+  appLanguage: AppLanguage;
+  onCancel: () => void;
+  onSelect: (
+    color: string
+  ) => void;
+}) {
+  const t =
+    translations[
+      appLanguage
+    ];
+
+  const initialHSV =
+    useMemo(
+      () =>
+        hexToHsv(
+          initialColor
+        ),
+      [initialColor]
+    );
+
+  const squareRef =
+    useRef<HTMLDivElement>(
+      null
+    );
+
+  const hueRef =
+    useRef<HTMLDivElement>(
+      null
+    );
+
+  const [
+    hue,
+    setHue,
+  ] =
+    useState(
+      initialHSV.h
+    );
+
+  const [
+    saturation,
+    setSaturation,
+  ] =
+    useState(
+      initialHSV.s
+    );
+
+  const [
+    brightness,
+    setBrightness,
+  ] =
+    useState(
+      initialHSV.v
+    );
+
+  const previewColor =
+    hsvToHex(
+      hue,
+      saturation,
+      brightness
+    );
+
+  function updateSquare(
+    event:
+      | ReactPointerEvent<HTMLDivElement>
+      | PointerEvent
+  ) {
+    const element =
+      squareRef.current;
+
+    if (!element) {
+      return;
+    }
+
+    const rect =
+      element.getBoundingClientRect();
+
+    const x =
+      Math.max(
+        0,
+        Math.min(
+          rect.width,
+          event.clientX -
+            rect.left
+        )
+      );
+
+    const y =
+      Math.max(
+        0,
+        Math.min(
+          rect.height,
+          event.clientY -
+            rect.top
+        )
+      );
+
+    setSaturation(
+      x /
+        rect.width
+    );
+
+    setBrightness(
+      1 -
+        y /
+          rect.height
+    );
+  }
+
+  function updateHue(
+    event:
+      | ReactPointerEvent<HTMLDivElement>
+      | PointerEvent
+  ) {
+    const element =
+      hueRef.current;
+
+    if (!element) {
+      return;
+    }
+
+    const rect =
+      element.getBoundingClientRect();
+
+    const x =
+      Math.max(
+        0,
+        Math.min(
+          rect.width,
+          event.clientX -
+            rect.left
+        )
+      );
+
+    setHue(
+      (x /
+        rect.width) *
+        360
+    );
+  }
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/20 px-4 backdrop-blur-[3px]">
+
+      <div className="hide-scrollbar max-h-[94dvh] w-full max-w-[390px] overflow-y-auto rounded-[30px] bg-white p-5">
+
+        <div className="flex items-start justify-between">
+
+          <div>
+
+            <h3 className="font-pretendard text-[19px] font-semibold">
+              {
+                t.customColor
+              }
+            </h3>
+
+            <p className="font-pretendard mt-1 text-[13px] text-[#202020]/40">
+              {
+                t.customColorSub
+              }
+            </p>
+
+          </div>
+
+          <div
+            className="h-11 w-11 rounded-full"
+            style={{
+              backgroundColor:
+                previewColor,
+            }}
+          />
+
+        </div>
+
+        <div className="mt-4 h-[175px] overflow-hidden rounded-[22px] bg-[#F8F8F8]">
+
+          <CharacterView
+            bodyColor={
+              previewColor
+            }
+            leftEye={
+              leftEye
+            }
+            rightEye={
+              rightEye
+            }
+          />
+
+        </div>
+
+        <div
+          ref={
+            squareRef
+          }
+          onPointerDown={(
+            event
+          ) => {
+            event.currentTarget.setPointerCapture(
+              event.pointerId
+            );
+
+            updateSquare(
+              event
+            );
+          }}
+          onPointerMove={(
+            event
+          ) => {
+            if (
+              event.buttons ===
+              1
+            ) {
+              updateSquare(
+                event
+              );
+            }
+          }}
+          className="relative mt-4 h-[185px] touch-none overflow-hidden rounded-[20px]"
+          style={{
+            backgroundColor:
+              hueToHex(
+                hue
+              ),
+          }}
+        >
+
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(to right,#fff,transparent)",
+            }}
+          />
+
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(to bottom,transparent,#000)",
+            }}
+          />
+
+          <div
+            className="pointer-events-none absolute h-6 w-6 -translate-x-1/2 -translate-y-1/2 rounded-full border-[3px] border-white shadow"
+            style={{
+              left: `${
+                saturation *
+                100
+              }%`,
+              top: `${
+                (1 -
+                  brightness) *
+                100
+              }%`,
+            }}
+          />
+
+        </div>
+
+        <div
+          ref={
+            hueRef
+          }
+          onPointerDown={(
+            event
+          ) => {
+            event.currentTarget.setPointerCapture(
+              event.pointerId
+            );
+
+            updateHue(
+              event
+            );
+          }}
+          onPointerMove={(
+            event
+          ) => {
+            if (
+              event.buttons ===
+              1
+            ) {
+              updateHue(
+                event
+              );
+            }
+          }}
+          className="relative mt-4 h-7 touch-none rounded-full"
+          style={{
+            background:
+              "linear-gradient(to right,#f00,#ff0,#0f0,#0ff,#00f,#f0f,#f00)",
+          }}
+        >
+
+          <div
+            className="pointer-events-none absolute top-1/2 h-9 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-[3px] border-white shadow"
+            style={{
+              left: `${
+                (hue /
+                  360) *
+                100
+              }%`,
+            }}
+          />
+
+        </div>
+
+        <div className="mt-4 flex items-center gap-3 rounded-[18px] bg-[#F6F6F6] px-4 py-3">
+
+          <div
+            className="h-10 w-10 rounded-full"
+            style={{
+              backgroundColor:
+                previewColor,
+            }}
+          />
+
+          <span className="font-pretendard text-[15px] font-semibold">
+            {
+              previewColor
+            }
+          </span>
+
+        </div>
+
+        <div className="mt-5 grid grid-cols-2 gap-3">
+
+          <button
+            type="button"
+            onClick={
+              onCancel
+            }
+            className="font-pretendard h-[52px] rounded-full bg-[#EEEEEE] font-semibold"
+          >
+            {
+              t.cancel
+            }
+          </button>
+
+          <button
+            type="button"
+            onClick={() =>
+              onSelect(
+                previewColor
+              )
+            }
+            className="font-pretendard h-[52px] rounded-full bg-[#BFFF00] font-semibold"
+          >
+            {
+              t.select
+            }
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
   );
 }
 
@@ -397,49 +1483,387 @@ function CharacterModel({
 ===================================================== */
 
 export default function Home() {
-  const [step, setStep] = useState<Step>("start");
-  const [language, setLanguage] = useState<Language | null>(null);
-  const [level, setLevel] = useState<Level | null>(null);
-  const [goal, setGoal] = useState<Goal | null>(null);
-  const [space, setSpace] = useState<Space | null>(null);
+  const [
+    step,
+    setStep,
+  ] =
+    useState<Step>(
+      "start"
+    );
 
-  const [bodyColor, setBodyColor] = useState("#C7F238");
+  const [
+    appLanguage,
+    setAppLanguage,
+  ] =
+    useState<AppLanguage>(
+      "en"
+    );
 
-  const [leftEye, setLeftEye] = useState("P");
-  const [rightEye, setRightEye] = useState("B");
+  const [
+    language,
+    setLanguage,
+  ] =
+    useState<
+      Language | null
+    >(null);
 
-  const [characterTab, setCharacterTab] = useState<CharacterTab>("color");
-  const [eyeTarget, setEyeTarget] = useState<EyeTarget>("left");
+  const [
+    level,
+    setLevel,
+  ] =
+    useState<
+      Level | null
+    >(null);
 
-  const MobileFrame = ({ children }: { children: React.ReactNode }) => (
+  const [
+    goal,
+    setGoal,
+  ] =
+    useState<
+      Goal | null
+    >(null);
+
+  const [
+    space,
+    setSpace,
+  ] =
+    useState<
+      Space | null
+    >(null);
+
+  const [
+    bodyColor,
+    setBodyColor,
+  ] =
+    useState(
+      "#C7F238"
+    );
+
+  const [
+    leftEye,
+    setLeftEye,
+  ] =
+    useState(
+      "P"
+    );
+
+  const [
+    rightEye,
+    setRightEye,
+  ] =
+    useState(
+      "B"
+    );
+
+  const [
+    characterTab,
+    setCharacterTab,
+  ] =
+    useState<CharacterTab>(
+      "color"
+    );
+
+  const [
+    eyeTarget,
+    setEyeTarget,
+  ] =
+    useState<EyeTarget>(
+      "left"
+    );
+
+  const [
+    showColorPicker,
+    setShowColorPicker,
+  ] =
+    useState(false);
+
+  const [
+    displayName,
+    setDisplayName,
+  ] =
+    useState(
+      "Bunnies"
+    );
+
+  const [
+    editingName,
+    setEditingName,
+  ] =
+    useState(false);
+
+  const [
+    notifications,
+    setNotifications,
+  ] =
+    useState(true);
+
+  const [
+    sound,
+    setSound,
+  ] =
+    useState(true);
+
+  const [
+    vibration,
+    setVibration,
+  ] =
+    useState(true);
+
+  const [
+    loaded,
+    setLoaded,
+  ] =
+    useState(false);
+
+  const t =
+    translations[
+      appLanguage
+    ];
+
+  /* =====================================================
+     STORAGE LOAD
+  ===================================================== */
+
+  useEffect(() => {
+    try {
+      const saved =
+        localStorage.getItem(
+          "plabla-settings"
+        );
+
+      if (saved) {
+        const data =
+          JSON.parse(
+            saved
+          );
+
+        if (
+          data.appLanguage
+        ) {
+          setAppLanguage(
+            data.appLanguage
+          );
+        }
+
+        if (
+          data.language
+        ) {
+          setLanguage(
+            data.language
+          );
+        }
+
+        if (
+          data.level
+        ) {
+          setLevel(
+            data.level
+          );
+        }
+
+        if (
+          data.goal
+        ) {
+          setGoal(
+            data.goal
+          );
+        }
+
+        if (
+          data.bodyColor
+        ) {
+          setBodyColor(
+            data.bodyColor
+          );
+        }
+
+        if (
+          data.leftEye
+        ) {
+          setLeftEye(
+            data.leftEye
+          );
+        }
+
+        if (
+          data.rightEye
+        ) {
+          setRightEye(
+            data.rightEye
+          );
+        }
+
+        if (
+          data.displayName
+        ) {
+          setDisplayName(
+            data.displayName
+          );
+        }
+
+        if (
+          typeof data.notifications ===
+          "boolean"
+        ) {
+          setNotifications(
+            data.notifications
+          );
+        }
+
+        if (
+          typeof data.sound ===
+          "boolean"
+        ) {
+          setSound(
+            data.sound
+          );
+        }
+
+        if (
+          typeof data.vibration ===
+          "boolean"
+        ) {
+          setVibration(
+            data.vibration
+          );
+        }
+
+        if (
+          data.onboardingComplete
+        ) {
+          setStep(
+            "home"
+          );
+        }
+      }
+    } catch {
+      //
+    }
+
+    setLoaded(
+      true
+    );
+  }, []);
+
+  /* =====================================================
+     STORAGE SAVE
+  ===================================================== */
+
+  useEffect(() => {
+    if (!loaded) {
+      return;
+    }
+
+    const onboardingComplete =
+      [
+        "home",
+        "space",
+        "profile",
+        "settings",
+        "landscape",
+      ].includes(
+        step
+      );
+
+    localStorage.setItem(
+      "plabla-settings",
+      JSON.stringify({
+        appLanguage,
+        language,
+        level,
+        goal,
+        bodyColor,
+        leftEye,
+        rightEye,
+        displayName,
+        notifications,
+        sound,
+        vibration,
+        onboardingComplete,
+      })
+    );
+  }, [
+    loaded,
+    step,
+    appLanguage,
+    language,
+    level,
+    goal,
+    bodyColor,
+    leftEye,
+    rightEye,
+    displayName,
+    notifications,
+    sound,
+    vibration,
+  ]);
+
+  /* =====================================================
+     INTRO
+  ===================================================== */
+
+  useEffect(() => {
+    if (
+      !loaded ||
+      step !== "start"
+    ) {
+      return;
+    }
+
+    const timer =
+      setTimeout(() => {
+        setStep(
+          "app-language"
+        );
+      }, 2000);
+
+    return () =>
+      clearTimeout(
+        timer
+      );
+  }, [
+    step,
+    loaded,
+  ]);
+
+  /* =====================================================
+     TYPOGRAPHY
+  ===================================================== */
+
+  const headlineClass =
+    appLanguage ===
+    "ko"
+      ? "font-korean-headline text-[35px] font-bold leading-[1.2] tracking-[-0.025em] text-[#202020]"
+      : "font-fredoka text-[35px] font-medium leading-[1.08] tracking-[-0.015em] text-[#202020]";
+
+  const bodyClass =
+    "font-pretendard text-[15px] font-normal leading-6 tracking-[-0.01em]";
+
+  const sectionTitleClass =
+    "font-pretendard text-[17px] font-semibold tracking-[-0.01em] text-[#202020]";
+
+  const selectionClass =
+    "font-pretendard text-[16px] font-semibold tracking-[-0.01em]";
+
+  /* =====================================================
+     COMMON
+  ===================================================== */
+
+  const MobileFrame = ({
+    children,
+  }: {
+    children:
+      ReactNode;
+  }) => (
     <div className="flex min-h-dvh items-center justify-center bg-[#F2F2F2]">
-      <main className="relative flex h-dvh w-full max-w-[430px] flex-col overflow-hidden bg-[#F8F8F8] sm:h-[min(100dvh,844px)] sm:rounded-[2.5rem] sm:shadow-[0_24px_60px_rgba(32,32,32,0.08)]">
-        {children}
-      </main>
-    </div>
-  );
 
-  const BackButton = ({ onClick }: { onClick: () => void }) => (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-label="Back"
-      className="mb-6 flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-white/70 shadow-[0_10px_30px_rgba(0,0,0,0.08)] backdrop-blur-xl transition active:scale-95"
-      style={{
-        background:
-          "linear-gradient(135deg, rgba(255,255,255,0.82), rgba(255,255,255,0.35))",
-      }}
-    >
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-        <path
-          d="M14.5 6.5L9 12L14.5 17.5"
-          stroke="#202020"
-          strokeWidth="2.6"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    </button>
+      <main className="relative flex h-dvh w-full max-w-[430px] flex-col overflow-hidden bg-[#F8F8F8]">
+
+        {children}
+
+      </main>
+
+    </div>
   );
 
   const BottomButton = ({
@@ -447,468 +1871,2006 @@ export default function Home() {
     disabled,
     onClick,
   }: {
-    children: React.ReactNode;
+    children:
+      ReactNode;
     disabled?: boolean;
     onClick: () => void;
   }) => (
     <button
       type="button"
-      disabled={disabled}
-      onClick={onClick}
-      className={`font-fredoka h-14 w-full rounded-full text-lg font-medium transition ${
+      disabled={
         disabled
-          ? "cursor-not-allowed bg-[#E4E4E4] text-[#999999]"
-          : "bg-[#BFFF00] text-[#202020] active:scale-[0.98]"
+      }
+      onClick={
+        onClick
+      }
+      className={`font-pretendard h-14 w-full rounded-full text-[17px] font-semibold ${
+        disabled
+          ? "bg-[#E5E5E5] text-[#999]"
+          : "bg-[#BFFF00] text-[#202020]"
       }`}
     >
       {children}
     </button>
   );
 
-  const headingClass =
-    "font-fredoka text-[35px] font-medium leading-[1.04] tracking-[-0.02em] text-[#202020]";
-  const subTextClass =
-    "text-[15px] leading-6 tracking-[-0.01em] text-[#202020]/45";
+  const BackButton = ({
+    onClick,
+  }: {
+    onClick:
+      () => void;
+  }) => (
+    <button
+      type="button"
+      onClick={
+        onClick
+      }
+      className="mb-6 flex h-14 w-14 items-center justify-center rounded-full bg-white shadow"
+    >
+      <span className="text-[30px]">
+        ‹
+      </span>
+    </button>
+  );
 
-  if (step === "start") {
+  const Toggle = ({
+    value,
+    onChange,
+  }: {
+    value: boolean;
+    onChange:
+      () => void;
+  }) => (
+    <button
+      type="button"
+      onClick={
+        onChange
+      }
+      className={`relative h-7 w-12 rounded-full ${
+        value
+          ? "bg-[#BFFF00]"
+          : "bg-[#D7D7D7]"
+      }`}
+    >
+      <div
+        className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow ${
+          value
+            ? "left-6"
+            : "left-1"
+        }`}
+      />
+    </button>
+  );
+
+  const BottomNav = ({
+    current,
+  }: {
+    current:
+      AppTab;
+  }) => {
+    const tabs: {
+      key: AppTab;
+      en: string;
+      ko: string;
+      icon: string;
+    }[] = [
+      {
+        key: "home",
+        en: "Home",
+        ko: "홈",
+        icon: "⌂",
+      },
+      {
+        key: "space",
+        en: "Spaces",
+        ko: "공간",
+        icon: "▦",
+      },
+      {
+        key: "profile",
+        en: "Profile",
+        ko: "프로필",
+        icon: "○",
+      },
+      {
+        key: "settings",
+        en: "Settings",
+        ko: "설정",
+        icon: "⚙",
+      },
+    ];
+
+    return (
+      <div className="border-t border-black/[0.05] bg-white px-3 pb-[max(8px,env(safe-area-inset-bottom))] pt-2">
+
+        <div className="grid grid-cols-4">
+
+          {tabs.map(
+            (
+              item
+            ) => {
+              const active =
+                current ===
+                item.key;
+
+              return (
+                <button
+                  key={
+                    item.key
+                  }
+                  type="button"
+                  onClick={() =>
+                    setStep(
+                      item.key
+                    )
+                  }
+                  className={`font-pretendard flex flex-col items-center gap-1 ${
+                    active
+                      ? "text-[#202020]"
+                      : "text-[#202020]/30"
+                  }`}
+                >
+
+                  <div
+                    className={`flex h-8 w-11 items-center justify-center rounded-full text-[19px] ${
+                      active
+                        ? "bg-[#BFFF00]"
+                        : ""
+                    }`}
+                  >
+                    {
+                      item.icon
+                    }
+                  </div>
+
+                  <span className="text-[10px] font-semibold">
+                    {appLanguage ===
+                    "ko"
+                      ? item.ko
+                      : item.en}
+                  </span>
+
+                </button>
+              );
+            }
+          )}
+
+        </div>
+
+      </div>
+    );
+  };
+
+  /* =====================================================
+     LOADING
+  ===================================================== */
+
+  if (!loaded) {
+    return null;
+  }
+
+  /* =====================================================
+     START
+  ===================================================== */
+
+  if (
+    step ===
+    "start"
+  ) {
     return (
       <MobileFrame>
-        <div className="flex flex-1 items-center justify-center px-8">
+
+        <div className="flex flex-1 items-center justify-center">
+
           <Image
             src="/plabla-logo-transparent.svg"
             alt="PlaBla"
-            width={280}
-            height={180}
+            width={
+              210
+            }
+            height={
+              140
+            }
             priority
-            className="h-auto w-[210px]"
           />
+
         </div>
 
-        <div className="px-6 pb-[max(2rem,env(safe-area-inset-bottom))]">
-          <BottomButton onClick={() => setStep("language")}>Start</BottomButton>
-        </div>
       </MobileFrame>
     );
   }
 
-  if (step === "language") {
+  /* =====================================================
+     APP LANGUAGE
+  ===================================================== */
+
+  if (
+    step ===
+    "app-language"
+  ) {
     return (
       <MobileFrame>
-        <div className="hide-scrollbar flex flex-1 flex-col overflow-y-auto px-6 pt-8">
-          <BackButton onClick={() => setStep("start")} />
 
-          <h1 className={headingClass}>
-            Choose the language
-            <br />
-            you want to learn.
+        <div className="flex flex-1 flex-col px-6 pt-10">
+
+          <h1
+            className={
+              headlineClass
+            }
+          >
+            {
+              t.chooseAppLanguage
+            }
           </h1>
 
-          <p className={`mb-8 mt-3 ${subTextClass}`}>Select one language to continue.</p>
-
-          <div className="flex flex-col gap-3">
-            {languages.map((item) => {
-              const selected = language === item.name;
-
-              return (
-                <button
-                  key={item.name}
-                  type="button"
-                  onClick={() => setLanguage(item.name)}
-                  className={`flex h-[68px] shrink-0 items-center gap-4 rounded-[22px] border-2 px-4 text-left transition ${
-                    selected ? "border-[#BFFF00] bg-[#F7FFE5]" : "border-transparent bg-white"
-                  }`}
-                >
-                  <div
-                    className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-lg font-semibold ${
-                      selected ? "bg-[#BFFF00]" : "bg-[#F1F1F1]"
-                    }`}
-                  >
-                    {item.symbol}
-                  </div>
-
-                  <span className="font-fredoka text-[18px] font-medium text-[#202020]">
-                    {item.name}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-
-          <div className="h-6 shrink-0" />
-        </div>
-
-        <div className="px-6 pt-5 pb-[max(2rem,env(safe-area-inset-bottom))]">
-          <BottomButton disabled={!language} onClick={() => setStep("info")}>
-            Next
-          </BottomButton>
-        </div>
-      </MobileFrame>
-    );
-  }
-
-  if (step === "info") {
-    return (
-      <MobileFrame>
-        <div className="hide-scrollbar flex flex-1 flex-col overflow-y-auto px-6 pt-8">
-          <BackButton onClick={() => setStep("language")} />
-
-          <h1 className={headingClass}>
-            Tell us about
-            <br />
-            your learning.
-          </h1>
-
-          <p className={`mb-8 mt-3 ${subTextClass}`}>
-            This helps us find the right experience for you.
+          <p
+            className={`${bodyClass} mt-3 text-[#202020]/45`}
+          >
+            {
+              t.chooseAppLanguageSub
+            }
           </p>
 
-          <section className="mb-8">
-            <h2 className="mb-3 font-semibold tracking-[-0.01em] text-[#202020]">
-              Your level
-            </h2>
+          <div className="mt-10 space-y-3">
 
-            <div className="grid grid-cols-3 gap-3">
-              {levels.map((item) => (
-                <button
-                  key={item}
-                  type="button"
-                  onClick={() => setLevel(item)}
-                  className={`font-fredoka h-[76px] rounded-[22px] border-2 text-sm font-medium ${
-                    level === item
-                      ? "border-[#BFFF00] bg-[#F7FFE5]"
-                      : "border-transparent bg-white"
-                  }`}
-                >
-                  {item}
-                </button>
-              ))}
-            </div>
-          </section>
+            <button
+              type="button"
+              onClick={() =>
+                setAppLanguage(
+                  "en"
+                )
+              }
+              className={`flex h-[74px] w-full items-center justify-between rounded-[22px] border-2 px-5 ${
+                appLanguage ===
+                "en"
+                  ? "border-[#BFFF00] bg-[#F7FFE5]"
+                  : "border-transparent bg-white"
+              }`}
+            >
 
-          <section>
-            <h2 className="mb-3 font-semibold tracking-[-0.01em] text-[#202020]">
-              Learning goal
-            </h2>
+              <span className="font-pretendard text-[17px] font-semibold">
+                English
+              </span>
 
-            <div className="grid grid-cols-2 gap-3">
-              {goals.map((item) => (
-                <button
-                  key={item}
-                  type="button"
-                  onClick={() => setGoal(item)}
-                  className={`font-fredoka h-[76px] rounded-[22px] border-2 font-medium ${
-                    goal === item
-                      ? "border-[#BFFF00] bg-[#F7FFE5]"
-                      : "border-transparent bg-white"
-                  }`}
-                >
-                  {item}
-                </button>
-              ))}
-            </div>
-          </section>
+              {appLanguage ===
+                "en" && (
+                <span>
+                  ✓
+                </span>
+              )}
+
+            </button>
+
+            <button
+              type="button"
+              onClick={() =>
+                setAppLanguage(
+                  "ko"
+                )
+              }
+              className={`flex h-[74px] w-full items-center justify-between rounded-[22px] border-2 px-5 ${
+                appLanguage ===
+                "ko"
+                  ? "border-[#BFFF00] bg-[#F7FFE5]"
+                  : "border-transparent bg-white"
+              }`}
+            >
+
+              <span className="font-pretendard text-[17px] font-semibold">
+                한국어
+              </span>
+
+              {appLanguage ===
+                "ko" && (
+                <span>
+                  ✓
+                </span>
+              )}
+
+            </button>
+
+          </div>
+
+          <div className="mt-auto pb-8">
+
+            <BottomButton
+              onClick={() =>
+                setStep(
+                  "language"
+                )
+              }
+            >
+              {
+                t.next
+              }
+            </BottomButton>
+
+          </div>
+
         </div>
 
-        <div className="px-6 pt-5 pb-[max(2rem,env(safe-area-inset-bottom))]">
-          <BottomButton disabled={!level || !goal} onClick={() => setStep("character")}>
-            Next
-          </BottomButton>
-        </div>
       </MobileFrame>
     );
   }
 
-  if (step === "character") {
+  /* =====================================================
+     LEARNING LANGUAGE
+  ===================================================== */
+
+  if (
+    step ===
+    "language"
+  ) {
     return (
       <MobileFrame>
-        <div className="hide-scrollbar flex-1 overflow-y-auto overscroll-y-contain px-6 pt-8 pb-8">
-          <BackButton onClick={() => setStep("info")} />
 
-          <h1 className={headingClass}>Make it yours.</h1>
+        <div className="hide-scrollbar flex-1 overflow-y-auto px-6 pt-8">
 
-          <p className={`mt-3 ${subTextClass}`}>Create your PlaBla character.</p>
+          <BackButton
+            onClick={() =>
+              setStep(
+                "app-language"
+              )
+            }
+          />
 
-          <div className="relative mt-5 h-[300px] w-full overflow-hidden rounded-[30px] bg-white">
-            <Canvas
-              camera={{
-                position: [0, 0.18, 3.8],
-                fov: 32,
-              }}
-              gl={{ antialias: true }}
-            >
-              <ambientLight intensity={2.45} />
-              <directionalLight position={[4, 6, 6]} intensity={2.5} />
-              <directionalLight position={[-4, 2, 3]} intensity={1.2} />
+          <h1
+            className={
+              headlineClass
+            }
+          >
+            {t.chooseLanguage
+              .split(
+                "\n"
+              )
+              .map(
+                (
+                  line,
+                  index
+                ) => (
+                  <span
+                    key={
+                      index
+                    }
+                  >
+                    {
+                      line
+                    }
+                    <br />
+                  </span>
+                )
+              )}
+          </h1>
 
-              <CharacterModel
-                bodyColor={bodyColor}
-                leftEye={leftEye}
-                rightEye={rightEye}
-              />
+          <p
+            className={`${bodyClass} mb-7 mt-3 text-[#202020]/45`}
+          >
+            {
+              t.chooseLanguageSub
+            }
+          </p>
 
-              <OrbitControls
-                enablePan={false}
-                enableZoom={false}
-                minPolarAngle={Math.PI / 2}
-                maxPolarAngle={Math.PI / 2}
-                minAzimuthAngle={-0.78}
-                maxAzimuthAngle={0.78}
-                target={[0, 0.2, 0]}
-              />
-            </Canvas>
+          <div className="space-y-3">
+
+            {languages.map(
+              (
+                item
+              ) => (
+                <button
+                  key={
+                    item.name
+                  }
+                  type="button"
+                  onClick={() =>
+                    setLanguage(
+                      item.name
+                    )
+                  }
+                  className={`flex h-[68px] w-full items-center gap-4 rounded-[22px] border-2 px-4 ${
+                    language ===
+                    item.name
+                      ? "border-[#BFFF00] bg-[#F7FFE5]"
+                      : "border-transparent bg-white"
+                  }`}
+                >
+
+                  <div
+                    className={`flex h-11 w-11 items-center justify-center rounded-full font-pretendard text-[18px] font-semibold ${
+                      language ===
+                      item.name
+                        ? "bg-[#BFFF00]"
+                        : "bg-[#F1F1F1]"
+                    }`}
+                  >
+                    {
+                      item.symbol
+                    }
+                  </div>
+
+                  <span
+                    className={
+                      selectionClass
+                    }
+                  >
+                    {appLanguage ===
+                    "ko"
+                      ? item.ko
+                      : item.name}
+                  </span>
+
+                </button>
+              )
+            )}
+
           </div>
 
-          <p className="mt-2 text-center text-xs tracking-[-0.01em] text-[#202020]/30">
-            Drag left or right to rotate
+        </div>
+
+        <div className="px-6 pb-6 pt-4">
+
+          <BottomButton
+            disabled={
+              !language
+            }
+            onClick={() =>
+              setStep(
+                "info"
+              )
+            }
+          >
+            {
+              t.next
+            }
+          </BottomButton>
+
+        </div>
+
+      </MobileFrame>
+    );
+  }
+
+  /* =====================================================
+     INFO
+  ===================================================== */
+
+  if (
+    step ===
+    "info"
+  ) {
+    return (
+      <MobileFrame>
+
+        <div className="hide-scrollbar flex-1 overflow-y-auto px-6 pt-8">
+
+          <BackButton
+            onClick={() =>
+              setStep(
+                "language"
+              )
+            }
+          />
+
+          <h1
+            className={
+              headlineClass
+            }
+          >
+            {t.tellUs
+              .split(
+                "\n"
+              )
+              .map(
+                (
+                  line
+                ) => (
+                  <span
+                    key={
+                      line
+                    }
+                  >
+                    {
+                      line
+                    }
+                    <br />
+                  </span>
+                )
+              )}
+          </h1>
+
+          <p
+            className={`${bodyClass} mb-8 mt-3 text-[#202020]/45`}
+          >
+            {
+              t.tellUsSub
+            }
+          </p>
+
+          <p
+            className={`${sectionTitleClass} mb-3`}
+          >
+            {
+              t.yourLevel
+            }
+          </p>
+
+          <div className="grid grid-cols-3 gap-3">
+
+            {levels.map(
+              (
+                item
+              ) => (
+                <button
+                  key={
+                    item.value
+                  }
+                  type="button"
+                  onClick={() =>
+                    setLevel(
+                      item.value
+                    )
+                  }
+                  className={`h-[76px] rounded-[22px] border-2 ${
+                    level ===
+                    item.value
+                      ? "border-[#BFFF00] bg-[#F7FFE5]"
+                      : "border-transparent bg-white"
+                  }`}
+                >
+                  <span
+                    className={
+                      selectionClass
+                    }
+                  >
+                    {appLanguage ===
+                    "ko"
+                      ? item.ko
+                      : item.value}
+                  </span>
+                </button>
+              )
+            )}
+
+          </div>
+
+          <p
+            className={`${sectionTitleClass} mb-3 mt-8`}
+          >
+            {
+              t.learningGoal
+            }
+          </p>
+
+          <div className="grid grid-cols-2 gap-3">
+
+            {goals.map(
+              (
+                item
+              ) => (
+                <button
+                  key={
+                    item.value
+                  }
+                  type="button"
+                  onClick={() =>
+                    setGoal(
+                      item.value
+                    )
+                  }
+                  className={`h-[76px] rounded-[22px] border-2 ${
+                    goal ===
+                    item.value
+                      ? "border-[#BFFF00] bg-[#F7FFE5]"
+                      : "border-transparent bg-white"
+                  }`}
+                >
+                  <span
+                    className={
+                      selectionClass
+                    }
+                  >
+                    {appLanguage ===
+                    "ko"
+                      ? item.ko
+                      : item.value}
+                  </span>
+                </button>
+              )
+            )}
+
+          </div>
+
+        </div>
+
+        <div className="px-6 pb-6 pt-4">
+
+          <BottomButton
+            disabled={
+              !level ||
+              !goal
+            }
+            onClick={() =>
+              setStep(
+                "character"
+              )
+            }
+          >
+            {
+              t.next
+            }
+          </BottomButton>
+
+        </div>
+
+      </MobileFrame>
+    );
+  }
+
+  /* =====================================================
+     CHARACTER
+  ===================================================== */
+
+  if (
+    step ===
+    "character"
+  ) {
+    return (
+      <MobileFrame>
+
+        {showColorPicker && (
+          <CustomColorPicker
+            initialColor={
+              bodyColor
+            }
+            leftEye={
+              leftEye
+            }
+            rightEye={
+              rightEye
+            }
+            appLanguage={
+              appLanguage
+            }
+            onCancel={() =>
+              setShowColorPicker(
+                false
+              )
+            }
+            onSelect={(
+              color
+            ) => {
+              setBodyColor(
+                color
+              );
+
+              setShowColorPicker(
+                false
+              );
+            }}
+          />
+        )}
+
+        <div className="hide-scrollbar flex-1 overflow-y-auto px-6 pt-8">
+
+          <BackButton
+            onClick={() =>
+              setStep(
+                "info"
+              )
+            }
+          />
+
+          <h1
+            className={
+              headlineClass
+            }
+          >
+            {
+              t.makeItYours
+            }
+          </h1>
+
+          <p
+            className={`${bodyClass} mt-3 text-[#202020]/45`}
+          >
+            {
+              t.createCharacter
+            }
+          </p>
+
+          <div className="mt-5 h-[300px] overflow-hidden rounded-[30px] bg-white">
+
+            <CharacterView
+              bodyColor={
+                bodyColor
+              }
+              leftEye={
+                leftEye
+              }
+              rightEye={
+                rightEye
+              }
+              rotate
+            />
+
+          </div>
+
+          <p className="font-pretendard mt-2 text-center text-[12px] text-[#202020]/30">
+            {
+              t.dragRotate
+            }
           </p>
 
           <div className="mt-5 grid grid-cols-2 rounded-full bg-[#EEEEEE] p-1">
+
             <button
               type="button"
-              onClick={() => setCharacterTab("color")}
-              className={`font-fredoka rounded-full py-2.5 font-medium transition ${
-                characterTab === "color"
-                  ? "bg-white text-[#202020] shadow-sm"
-                  : "text-[#202020]/40"
+              onClick={() =>
+                setCharacterTab(
+                  "color"
+                )
+              }
+              className={`rounded-full py-2.5 ${
+                characterTab ===
+                "color"
+                  ? "bg-white shadow"
+                  : ""
               }`}
             >
-              Color
+              <span
+                className={
+                  selectionClass
+                }
+              >
+                {
+                  t.color
+                }
+              </span>
             </button>
 
             <button
               type="button"
-              onClick={() => setCharacterTab("eyes")}
-              className={`font-fredoka rounded-full py-2.5 font-medium transition ${
-                characterTab === "eyes"
-                  ? "bg-white text-[#202020] shadow-sm"
-                  : "text-[#202020]/40"
+              onClick={() =>
+                setCharacterTab(
+                  "eyes"
+                )
+              }
+              className={`rounded-full py-2.5 ${
+                characterTab ===
+                "eyes"
+                  ? "bg-white shadow"
+                  : ""
               }`}
             >
-              Eyes
+              <span
+                className={
+                  selectionClass
+                }
+              >
+                {
+                  t.eyes
+                }
+              </span>
             </button>
+
           </div>
 
-          {characterTab === "color" && (
+          {characterTab ===
+            "color" && (
             <div className="mt-6">
-              <p className="mb-4 font-semibold tracking-[-0.01em] text-[#202020]">Body color</p>
 
-              <div className="flex flex-wrap gap-4 px-1 py-1">
-                {bodyColors.map((color) => (
-                  <button
-                    key={color.value}
-                    type="button"
-                    aria-label={color.name}
-                    onClick={() => setBodyColor(color.value)}
-                    className={`h-12 w-12 shrink-0 rounded-full transition ${
-                      bodyColor === color.value
-                        ? "ring-2 ring-[#202020] ring-offset-2 ring-offset-[#F8F8F8]"
-                        : ""
-                    }`}
-                    style={{ backgroundColor: color.value }}
-                  />
-                ))}
+              <p
+                className={`${sectionTitleClass} mb-4`}
+              >
+                {
+                  t.bodyColor
+                }
+              </p>
+
+              <div className="flex flex-wrap gap-4">
+
+                {bodyColors.map(
+                  (
+                    item
+                  ) => (
+                    <button
+                      key={
+                        item.value
+                      }
+                      type="button"
+                      onClick={() =>
+                        setBodyColor(
+                          item.value
+                        )
+                      }
+                      className={`h-12 w-12 rounded-full ${
+                        bodyColor ===
+                        item.value
+                          ? "ring-2 ring-[#202020] ring-offset-2"
+                          : ""
+                      }`}
+                      style={{
+                        backgroundColor:
+                          item.value,
+                      }}
+                    />
+                  )
+                )}
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setShowColorPicker(
+                      true
+                    )
+                  }
+                  className="flex h-12 w-12 items-center justify-center rounded-full"
+                  style={{
+                    background:
+                      "conic-gradient(#f55,#fd3,#5f8,#4df,#57f,#b5f,#f6c,#f55)",
+                  }}
+                >
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white font-semibold">
+                    +
+                  </span>
+                </button>
+
               </div>
+
             </div>
           )}
 
-          {characterTab === "eyes" && (
+          {characterTab ===
+            "eyes" && (
             <div className="mt-6">
-              <p className="font-fredoka mb-1 text-[18px] font-medium text-[#202020]">Eyes</p>
 
-              <p className="mb-5 text-xs leading-5 tracking-[-0.01em] text-[#202020]/40">
-                Left and right are based on what you see on the screen.
+              <p
+                className={
+                  sectionTitleClass
+                }
+              >
+                {
+                  t.eyes
+                }
               </p>
 
-              <div className="mb-4 grid grid-cols-2 rounded-[20px] bg-[#ECECEC] p-1">
-                <button
-                  type="button"
-                  onClick={() => setEyeTarget("left")}
-                  className={`font-fredoka rounded-[17px] py-2.5 text-sm font-medium transition ${
-                    eyeTarget === "left"
-                      ? "bg-white text-[#202020] shadow-sm"
-                      : "text-[#202020]/40"
-                  }`}
-                >
-                  Left eye
-                </button>
+              <p className="font-pretendard mt-1 text-[13px] text-[#202020]/40">
+                {
+                  t.leftRightHelp
+                }
+              </p>
 
-                <button
-                  type="button"
-                  onClick={() => setEyeTarget("right")}
-                  className={`font-fredoka rounded-[17px] py-2.5 text-sm font-medium transition ${
-                    eyeTarget === "right"
-                      ? "bg-white text-[#202020] shadow-sm"
-                      : "text-[#202020]/40"
-                  }`}
-                >
-                  Right eye
-                </button>
+              <div className="mt-4 grid grid-cols-2 rounded-[20px] bg-[#ECECEC] p-1">
+
+                {(
+                  [
+                    "left",
+                    "right",
+                  ] as EyeTarget[]
+                ).map(
+                  (
+                    item
+                  ) => (
+                    <button
+                      key={
+                        item
+                      }
+                      type="button"
+                      onClick={() =>
+                        setEyeTarget(
+                          item
+                        )
+                      }
+                      className={`rounded-[17px] py-2.5 ${
+                        eyeTarget ===
+                        item
+                          ? "bg-white shadow"
+                          : ""
+                      }`}
+                    >
+                      <span
+                        className={
+                          selectionClass
+                        }
+                      >
+                        {item ===
+                        "left"
+                          ? t.leftEye
+                          : t.rightEye}
+                      </span>
+                    </button>
+                  )
+                )}
+
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="mb-2 block text-sm font-semibold tracking-[-0.01em] text-[#202020]">
-                    Left
-                  </label>
+              <div className="mt-4 grid grid-cols-2 gap-3">
 
-                  <input
-                    value={leftEye}
-                    onFocus={() => setEyeTarget("left")}
-                    onChange={(event) => {
-                      const value = Array.from(event.target.value);
-                      setLeftEye(value.slice(-1).join(""));
-                    }}
-                    inputMode="text"
-                    autoComplete="off"
-                    className={`h-16 w-full rounded-[20px] border-2 bg-white text-center text-2xl font-semibold text-[#202020] outline-none transition ${
-                      eyeTarget === "left" ? "border-[#BFFF00]" : "border-transparent"
-                    }`}
-                  />
-                </div>
+                <input
+                  value={
+                    leftEye
+                  }
+                  onFocus={() =>
+                    setEyeTarget(
+                      "left"
+                    )
+                  }
+                  onChange={(
+                    event
+                  ) =>
+                    setLeftEye(
+                      Array.from(
+                        event
+                          .target
+                          .value
+                      )
+                        .slice(
+                          -1
+                        )
+                        .join(
+                          ""
+                        )
+                    )
+                  }
+                  className="font-pretendard h-16 rounded-[20px] bg-white text-center text-[24px] font-semibold"
+                />
 
-                <div>
-                  <label className="mb-2 block text-sm font-semibold tracking-[-0.01em] text-[#202020]">
-                    Right
-                  </label>
+                <input
+                  value={
+                    rightEye
+                  }
+                  onFocus={() =>
+                    setEyeTarget(
+                      "right"
+                    )
+                  }
+                  onChange={(
+                    event
+                  ) =>
+                    setRightEye(
+                      Array.from(
+                        event
+                          .target
+                          .value
+                      )
+                        .slice(
+                          -1
+                        )
+                        .join(
+                          ""
+                        )
+                    )
+                  }
+                  className="font-pretendard h-16 rounded-[20px] bg-white text-center text-[24px] font-semibold"
+                />
 
-                  <input
-                    value={rightEye}
-                    onFocus={() => setEyeTarget("right")}
-                    onChange={(event) => {
-                      const value = Array.from(event.target.value);
-                      setRightEye(value.slice(-1).join(""));
-                    }}
-                    inputMode="text"
-                    autoComplete="off"
-                    className={`h-16 w-full rounded-[20px] border-2 bg-white text-center text-2xl font-semibold text-[#202020] outline-none transition ${
-                      eyeTarget === "right" ? "border-[#BFFF00]" : "border-transparent"
-                    }`}
-                  />
-                </div>
               </div>
 
-              <p className="font-fredoka mb-3 mt-6 text-sm font-medium text-[#202020]">
-                Suggestions
+              <p
+                className={`${sectionTitleClass} mb-3 mt-6`}
+              >
+                {
+                  t.suggestions
+                }
               </p>
 
               <div className="grid grid-cols-4 gap-2">
-                {eyeSuggestions.map((eye) => (
-                  <button
-                    key={eye}
-                    type="button"
-                    onClick={() => {
-                      if (eyeTarget === "left") {
-                        setLeftEye(eye);
-                      } else {
-                        setRightEye(eye);
+
+                {eyeSuggestions.map(
+                  (
+                    item
+                  ) => (
+                    <button
+                      key={
+                        item
                       }
-                    }}
-                    className="flex h-14 items-center justify-center rounded-[18px] bg-white text-xl font-semibold text-[#202020] transition active:scale-95"
-                  >
-                    {eye}
-                  </button>
-                ))}
+                      type="button"
+                      onClick={() => {
+                        if (
+                          eyeTarget ===
+                          "left"
+                        ) {
+                          setLeftEye(
+                            item
+                          );
+                        } else {
+                          setRightEye(
+                            item
+                          );
+                        }
+                      }}
+                      className="font-pretendard h-14 rounded-[18px] bg-white text-[20px] font-semibold"
+                    >
+                      {
+                        item
+                      }
+                    </button>
+                  )
+                )}
+
               </div>
+
             </div>
           )}
 
-          <div className="mt-8 pb-[max(1rem,env(safe-area-inset-bottom))]">
-            <BottomButton onClick={() => setStep("space")}>Continue</BottomButton>
+          <div className="my-8">
+
+            <BottomButton
+              onClick={() =>
+                setStep(
+                  "home"
+                )
+              }
+            >
+              {
+                t.continue
+              }
+            </BottomButton>
+
           </div>
+
         </div>
+
       </MobileFrame>
     );
   }
 
-  if (step === "space") {
+  /* =====================================================
+     HOME
+  ===================================================== */
+
+  if (
+    step ===
+    "home"
+  ) {
     return (
       <MobileFrame>
-        <div className="hide-scrollbar flex flex-1 flex-col overflow-y-auto px-6 pt-8">
-          <BackButton onClick={() => setStep("character")} />
 
-          <h1 className={headingClass}>
-            What would you
-            <br />
-            like to do?
+        <div className="hide-scrollbar flex-1 overflow-y-auto px-6 pt-8">
+
+          <p className="font-pretendard text-[14px] text-[#202020]/40">
+            {t.hi},{" "}
+            {
+              displayName
+            }
+          </p>
+
+          <h1
+            className={`${headlineClass} mt-1`}
+          >
+            {
+              t.readyToTalk
+            }
           </h1>
 
-          <p className={`mb-6 mt-3 ${subTextClass}`}>Choose a space and start talking.</p>
+          <div className="mt-6 overflow-hidden rounded-[28px] bg-white">
 
-          <div className="flex flex-col gap-4 pb-5">
-            {spaces.map((item) => {
-              const selected = space === item.name;
+            <div className="h-[230px]">
 
-              return (
+              <CharacterView
+                bodyColor={
+                  bodyColor
+                }
+                leftEye={
+                  leftEye
+                }
+                rightEye={
+                  rightEye
+                }
+              />
+
+            </div>
+
+            <div className="px-5 pb-5">
+
+              <p className="font-pretendard text-[13px] text-[#202020]/40">
+                {
+                  t.learning
+                }
+              </p>
+
+              <p className="font-pretendard mt-1 text-[16px] font-semibold">
+
+                {appLanguage ===
+                "ko"
+                  ? languages.find(
+                      (
+                        item
+                      ) =>
+                        item.name ===
+                        language
+                    )?.ko
+                  : language}
+
+                {" · "}
+
+                {appLanguage ===
+                "ko"
+                  ? levels.find(
+                      (
+                        item
+                      ) =>
+                        item.value ===
+                        level
+                    )?.ko
+                  : level}
+
+              </p>
+
+            </div>
+
+          </div>
+
+          <div className="mt-7 flex justify-between">
+
+            <h2
+              className={
+                sectionTitleClass
+              }
+            >
+              {
+                t.jumpIntoSpace
+              }
+            </h2>
+
+            <button
+              type="button"
+              onClick={() =>
+                setStep(
+                  "space"
+                )
+              }
+              className="font-pretendard text-[13px] font-semibold text-[#202020]/40"
+            >
+              {
+                t.seeAll
+              }
+            </button>
+
+          </div>
+
+          <div className="mt-3 grid grid-cols-2 gap-3">
+
+            {spaces
+              .slice(
+                0,
+                2
+              )
+              .map(
+                (
+                  item
+                ) => (
+                  <button
+                    key={
+                      item.name
+                    }
+                    type="button"
+                    onClick={() => {
+                      setSpace(
+                        item.name
+                      );
+
+                      setStep(
+                        "landscape"
+                      );
+                    }}
+                    className="overflow-hidden rounded-[22px] bg-white text-left"
+                  >
+
+                    <div className="relative h-[110px]">
+
+                      <Image
+                        src={
+                          item.image
+                        }
+                        alt={
+                          item.name
+                        }
+                        fill
+                        className="object-cover"
+                      />
+
+                    </div>
+
+                    <div className="px-4 py-3">
+
+                      <p className="font-pretendard text-[14px] font-semibold">
+
+                        {appLanguage ===
+                        "ko"
+                          ? item.ko
+                          : item.name}
+
+                      </p>
+
+                    </div>
+
+                  </button>
+                )
+              )}
+
+          </div>
+
+        </div>
+
+        <BottomNav
+          current="home"
+        />
+
+      </MobileFrame>
+    );
+  }
+
+  /* =====================================================
+     SPACES
+  ===================================================== */
+
+  if (
+    step ===
+    "space"
+  ) {
+    return (
+      <MobileFrame>
+
+        <div className="hide-scrollbar flex-1 overflow-y-auto px-6 pt-8">
+
+          <h1
+            className={
+              headlineClass
+            }
+          >
+            {t.spacesTitle
+              .split(
+                "\n"
+              )
+              .map(
+                (
+                  line
+                ) => (
+                  <span
+                    key={
+                      line
+                    }
+                  >
+                    {
+                      line
+                    }
+                    <br />
+                  </span>
+                )
+              )}
+          </h1>
+
+          <p
+            className={`${bodyClass} mb-6 mt-3 text-[#202020]/45`}
+          >
+            {
+              t.spacesSub
+            }
+          </p>
+
+          <div className="space-y-4 pb-6">
+
+            {spaces.map(
+              (
+                item
+              ) => (
                 <button
-                  key={item.name}
+                  key={
+                    item.name
+                  }
                   type="button"
-                  onClick={() => setSpace(item.name)}
-                  className="overflow-hidden rounded-[26px] bg-white text-left"
+                  onClick={() => {
+                    setSpace(
+                      item.name
+                    );
+
+                    setStep(
+                      "landscape"
+                    );
+                  }}
+                  className="w-full overflow-hidden rounded-[26px] bg-white text-left"
                 >
+
                   <div className="relative h-[155px]">
+
                     <Image
-                      src={item.image}
-                      alt={item.name}
+                      src={
+                        item.image
+                      }
+                      alt={
+                        item.name
+                      }
                       fill
                       className="object-cover"
                     />
+
                   </div>
 
-                  <div
-                    className={`flex items-center justify-between px-5 py-4 transition ${
-                      selected ? "bg-[#BFFF00]" : "bg-white"
-                    }`}
-                  >
+                  <div className="flex items-center justify-between px-5 py-4">
+
                     <div>
-                      <p className="font-fredoka text-[18px] font-medium text-[#202020]">
-                        {item.name}
+
+                      <p className="font-pretendard text-[17px] font-semibold">
+
+                        {appLanguage ===
+                        "ko"
+                          ? item.ko
+                          : item.name}
+
                       </p>
 
-                      <p className="mt-1 text-xs tracking-[-0.01em] text-[#202020]/50">
-                        {item.description}
+                      <p className="font-pretendard mt-1 text-[13px] text-[#202020]/45">
+
+                        {appLanguage ===
+                        "ko"
+                          ? item.koDescription
+                          : item.description}
+
                       </p>
+
                     </div>
 
-                    <div className="rounded-full bg-white/75 px-3 py-2 text-xs font-semibold text-[#202020]">
-                      👥 {item.people}
-                    </div>
+                    <span className="font-pretendard rounded-full bg-[#F2F2F2] px-3 py-2 text-[13px] font-semibold">
+                      👥{" "}
+                      {
+                        item.people
+                      }
+                    </span>
+
                   </div>
+
                 </button>
-              );
-            })}
+              )
+            )}
+
           </div>
+
         </div>
 
-        <div className="px-6 pt-4 pb-[max(2rem,env(safe-area-inset-bottom))]">
-          <BottomButton disabled={!space} onClick={() => setStep("landscape")}>
-            Enter Space
-          </BottomButton>
-        </div>
+        <BottomNav
+          current="space"
+        />
+
       </MobileFrame>
     );
   }
 
-  return (
-    <div className="flex min-h-dvh items-center justify-center bg-[#202020]">
-      <div className="text-center">
-        <p className="text-sm text-white/50">PlaBla Space</p>
+  /* =====================================================
+     SPACE ENTER
+  ===================================================== */
 
-        <h1 className="font-fredoka mt-2 text-4xl font-medium tracking-[-0.02em] text-white">
-          {space}
-        </h1>
+  if (
+    step ===
+    "landscape"
+  ) {
+    const current =
+      spaces.find(
+        (
+          item
+        ) =>
+          item.name ===
+          space
+      );
 
-        <p className="mt-4 text-sm text-white/50">
-          {language} {" · "} {level} {" · "} {goal}
-        </p>
+    return (
+      <MobileFrame>
 
-        <button
-          type="button"
-          onClick={() => setStep("space")}
-          className="font-fredoka mt-10 rounded-full bg-[#BFFF00] px-8 py-3 font-medium text-[#202020]"
-        >
-          Back
-        </button>
-      </div>
-    </div>
-  );
+        <div className="relative flex flex-1 overflow-hidden bg-[#202020]">
+
+          {current && (
+            <>
+              <Image
+                src={
+                  current.image
+                }
+                alt={
+                  current.name
+                }
+                fill
+                className="object-cover opacity-50"
+              />
+
+              <div className="absolute inset-0 bg-gradient-to-b from-black/10 to-black/80" />
+
+              <div className="relative z-10 flex flex-1 flex-col p-6">
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setStep(
+                      "space"
+                    )
+                  }
+                  className="flex h-12 w-12 items-center justify-center rounded-full bg-white text-[28px]"
+                >
+                  ‹
+                </button>
+
+                <div className="mt-auto">
+
+                  <p className="font-pretendard text-[13px] text-white/55">
+                    {
+                      t.entering
+                    }
+                  </p>
+
+                  <h1
+                    className={
+                      appLanguage ===
+                      "ko"
+                        ? "font-korean-headline mt-1 text-[38px] text-white"
+                        : "font-fredoka mt-1 text-[38px] text-white"
+                    }
+                  >
+                    {appLanguage ===
+                    "ko"
+                      ? current.ko
+                      : current.name}
+                  </h1>
+
+                </div>
+
+              </div>
+            </>
+          )}
+
+        </div>
+
+        <BottomNav
+          current="space"
+        />
+
+      </MobileFrame>
+    );
+  }
+
+  /* =====================================================
+     PROFILE
+  ===================================================== */
+
+  if (
+    step ===
+    "profile"
+  ) {
+    return (
+      <MobileFrame>
+
+        <div className="hide-scrollbar flex-1 overflow-y-auto px-6 pt-8">
+
+          <h1
+            className={
+              headlineClass
+            }
+          >
+            {
+              t.yourProfile
+            }
+          </h1>
+
+          <p
+            className={`${bodyClass} mt-3 text-[#202020]/45`}
+          >
+            {
+              t.profileSub
+            }
+          </p>
+
+          <div className="mt-6 h-[260px] overflow-hidden rounded-[28px] bg-white">
+
+            <CharacterView
+              bodyColor={
+                bodyColor
+              }
+              leftEye={
+                leftEye
+              }
+              rightEye={
+                rightEye
+              }
+            />
+
+          </div>
+
+          <div className="mt-4 rounded-[24px] bg-white p-5">
+
+            <p className="font-pretendard text-[19px] font-semibold">
+              {
+                displayName
+              }
+            </p>
+
+            <div className="mt-5 space-y-4 font-pretendard text-[14px]">
+
+              <div className="flex justify-between">
+
+                <span className="text-[#202020]/40">
+                  {
+                    t.language
+                  }
+                </span>
+
+                <strong>
+                  {appLanguage ===
+                  "ko"
+                    ? languages.find(
+                        (
+                          item
+                        ) =>
+                          item.name ===
+                          language
+                      )?.ko
+                    : language}
+                </strong>
+
+              </div>
+
+              <div className="flex justify-between">
+
+                <span className="text-[#202020]/40">
+                  {
+                    t.level
+                  }
+                </span>
+
+                <strong>
+                  {appLanguage ===
+                  "ko"
+                    ? levels.find(
+                        (
+                          item
+                        ) =>
+                          item.value ===
+                          level
+                      )?.ko
+                    : level}
+                </strong>
+
+              </div>
+
+            </div>
+
+          </div>
+
+          <button
+            type="button"
+            onClick={() =>
+              setStep(
+                "character"
+              )
+            }
+            className="font-pretendard mt-4 h-[52px] w-full rounded-full bg-[#EEEEEE] text-[15px] font-semibold"
+          >
+            {
+              t.editCharacter
+            }
+          </button>
+
+        </div>
+
+        <BottomNav
+          current="profile"
+        />
+
+      </MobileFrame>
+    );
+  }
+
+  /* =====================================================
+     SETTINGS
+  ===================================================== */
+
+  if (
+    step ===
+    "settings"
+  ) {
+    return (
+      <MobileFrame>
+
+        <div className="hide-scrollbar flex-1 overflow-y-auto px-6 pb-7 pt-8">
+
+          <h1
+            className={
+              headlineClass
+            }
+          >
+            {
+              t.settings
+            }
+          </h1>
+
+          <p
+            className={`${bodyClass} mt-3 text-[#202020]/45`}
+          >
+            {
+              t.settingsSub
+            }
+          </p>
+
+          {/* GENERAL */}
+
+          <p
+            className={`${sectionTitleClass} mb-3 mt-7`}
+          >
+            {
+              t.general
+            }
+          </p>
+
+          <div className="rounded-[24px] bg-white p-5">
+
+            <p className="font-pretendard text-[15px] font-semibold">
+              {
+                t.appLanguage
+              }
+            </p>
+
+            <div className="mt-4 grid grid-cols-2 gap-2">
+
+              <button
+                type="button"
+                onClick={() =>
+                  setAppLanguage(
+                    "en"
+                  )
+                }
+                className={`h-[52px] rounded-[16px] font-pretendard text-[14px] font-semibold ${
+                  appLanguage ===
+                  "en"
+                    ? "bg-[#BFFF00]"
+                    : "bg-[#F3F3F3]"
+                }`}
+              >
+                English
+              </button>
+
+              <button
+                type="button"
+                onClick={() =>
+                  setAppLanguage(
+                    "ko"
+                  )
+                }
+                className={`h-[52px] rounded-[16px] font-pretendard text-[14px] font-semibold ${
+                  appLanguage ===
+                  "ko"
+                    ? "bg-[#BFFF00]"
+                    : "bg-[#F3F3F3]"
+                }`}
+              >
+                한국어
+              </button>
+
+            </div>
+
+          </div>
+
+          {/* ACCOUNT */}
+
+          <p
+            className={`${sectionTitleClass} mb-3 mt-7`}
+          >
+            {
+              t.account
+            }
+          </p>
+
+          <div className="overflow-hidden rounded-[24px] bg-white">
+
+            <div className="p-5">
+
+              <div className="flex items-center justify-between">
+
+                <div>
+
+                  <p className="font-pretendard text-[15px] font-semibold">
+                    {
+                      t.displayName
+                    }
+                  </p>
+
+                  <p className="font-pretendard mt-1 text-[13px] text-[#202020]/40">
+                    {
+                      displayName
+                    }
+                  </p>
+
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setEditingName(
+                      !editingName
+                    )
+                  }
+                  className="font-pretendard text-[14px] font-semibold text-[#202020]/40"
+                >
+                  {
+                    t.edit
+                  }{" "}
+                  ›
+                </button>
+
+              </div>
+
+              {editingName && (
+                <div className="mt-4">
+
+                  <input
+                    value={
+                      displayName
+                    }
+                    onChange={(
+                      event
+                    ) =>
+                      setDisplayName(
+                        event.target.value
+                      )
+                    }
+                    className="font-pretendard h-[50px] w-full rounded-[16px] bg-[#F5F5F5] px-4 outline-none"
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setEditingName(
+                        false
+                      )
+                    }
+                    className="font-pretendard mt-2 h-[46px] w-full rounded-full bg-[#BFFF00] font-semibold"
+                  >
+                    {
+                      t.save
+                    }
+                  </button>
+
+                </div>
+              )}
+
+            </div>
+
+          </div>
+
+          {/* LEARNING */}
+
+          <p
+            className={`${sectionTitleClass} mb-3 mt-7`}
+          >
+            {
+              t.learningSettings
+            }
+          </p>
+
+          <div className="rounded-[24px] bg-white p-5">
+
+            <p className="font-pretendard text-[14px] font-semibold">
+              {
+                t.learningLanguage
+              }
+            </p>
+
+            <div className="mt-3 grid grid-cols-2 gap-2">
+
+              {languages.map(
+                (
+                  item
+                ) => (
+                  <button
+                    key={
+                      item.name
+                    }
+                    type="button"
+                    onClick={() =>
+                      setLanguage(
+                        item.name
+                      )
+                    }
+                    className={`h-[48px] rounded-[15px] font-pretendard text-[13px] font-semibold ${
+                      language ===
+                      item.name
+                        ? "bg-[#BFFF00]"
+                        : "bg-[#F5F5F5]"
+                    }`}
+                  >
+                    {
+                      item.symbol
+                    }{" "}
+                    {appLanguage ===
+                    "ko"
+                      ? item.ko
+                      : item.name}
+                  </button>
+                )
+              )}
+
+            </div>
+
+          </div>
+
+          {/* NOTIFICATIONS */}
+
+          <p
+            className={`${sectionTitleClass} mb-3 mt-7`}
+          >
+            {
+              t.notificationsSection
+            }
+          </p>
+
+          <div className="overflow-hidden rounded-[24px] bg-white">
+
+            <div className="flex items-center justify-between border-b border-black/[0.05] p-5">
+
+              <div>
+
+                <p className="font-pretendard text-[15px] font-semibold">
+                  {
+                    t.notifications
+                  }
+                </p>
+
+                <p className="font-pretendard mt-1 text-[12px] text-[#202020]/40">
+                  {
+                    t.notificationsDesc
+                  }
+                </p>
+
+              </div>
+
+              <Toggle
+                value={
+                  notifications
+                }
+                onChange={() =>
+                  setNotifications(
+                    !notifications
+                  )
+                }
+              />
+
+            </div>
+
+            <div className="flex items-center justify-between border-b border-black/[0.05] p-5">
+
+              <p className="font-pretendard text-[15px] font-semibold">
+                {
+                  t.sound
+                }
+              </p>
+
+              <Toggle
+                value={
+                  sound
+                }
+                onChange={() =>
+                  setSound(
+                    !sound
+                  )
+                }
+              />
+
+            </div>
+
+            <div className="flex items-center justify-between p-5">
+
+              <p className="font-pretendard text-[15px] font-semibold">
+                {
+                  t.vibration
+                }
+              </p>
+
+              <Toggle
+                value={
+                  vibration
+                }
+                onChange={() => {
+                  setVibration(
+                    !vibration
+                  );
+
+                  if (
+                    !vibration &&
+                    "vibrate" in
+                      navigator
+                  ) {
+                    navigator.vibrate(
+                      80
+                    );
+                  }
+                }}
+              />
+
+            </div>
+
+          </div>
+
+          {/* APP */}
+
+          <p
+            className={`${sectionTitleClass} mb-3 mt-7`}
+          >
+            {
+              t.app
+            }
+          </p>
+
+          <div className="overflow-hidden rounded-[24px] bg-white">
+
+            <button
+              type="button"
+              onClick={() =>
+                setStep(
+                  "character"
+                )
+              }
+              className="flex w-full items-center justify-between border-b border-black/[0.05] p-5 font-pretendard"
+            >
+
+              <span className="font-semibold">
+                {
+                  t.editCharacter
+                }
+              </span>
+
+              <span>
+                ›
+              </span>
+
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                localStorage.removeItem(
+                  "plabla-settings"
+                );
+
+                setLanguage(
+                  null
+                );
+
+                setLevel(
+                  null
+                );
+
+                setGoal(
+                  null
+                );
+
+                setStep(
+                  "app-language"
+                );
+              }}
+              className="flex w-full items-center justify-between p-5 font-pretendard"
+            >
+
+              <span className="font-semibold text-red-500">
+                {
+                  t.resetAppData
+                }
+              </span>
+
+              <span>
+                ›
+              </span>
+
+            </button>
+
+          </div>
+
+          <p className="font-pretendard mt-6 text-center text-[11px] text-[#202020]/25">
+            PlaBla · Play to Talk
+          </p>
+
+        </div>
+
+        <BottomNav
+          current="settings"
+        />
+
+      </MobileFrame>
+    );
+  }
+
+  return null;
 }

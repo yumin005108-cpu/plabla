@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import * as THREE from "three";
 
 import { Canvas, useLoader } from "@react-three/fiber";
@@ -22,6 +22,7 @@ type Step =
   | "landscape";
 
 type Language =
+  | "Korean"
   | "English"
   | "Japanese"
   | "Chinese"
@@ -55,6 +56,7 @@ const languages: {
   name: Language;
   symbol: string;
 }[] = [
+  { name: "Korean", symbol: "한" },
   { name: "English", symbol: "A" },
   { name: "Japanese", symbol: "あ" },
   { name: "Chinese", symbol: "中" },
@@ -120,20 +122,24 @@ const spaces: {
 ];
 
 const bodyColors = [
-  { name: "Lime", value: "#BFFF00" },
-  { name: "Mint", value: "#20D9C2" },
-  { name: "Blue", value: "#59B8FF" },
-  { name: "Pink", value: "#FD7FC6" },
-  { name: "Yellow", value: "#FFFA2E" },
+  { name: "Lime", value: "#CDEB47" },
+  { name: "Mint", value: "#84E4D5" },
+  { name: "Blue", value: "#83C9FF" },
+  { name: "Pink", value: "#F5A8DB" },
+  { name: "Yellow", value: "#F8EB73" },
+  { name: "Lavender", value: "#C9B9FF" },
+  { name: "Peach", value: "#FFBE9B" },
 ];
 
 const eyeSuggestions = [
   "の",
   "中",
+  "あ",
+  "ㅎ",
   "ก",
   "ع",
   "Ω",
-  "๖",
+  "ㅁ",
 ];
 
 /* =====================================================
@@ -162,26 +168,34 @@ function createEyeTexture(text: string) {
   context.textAlign = "center";
   context.textBaseline = "middle";
 
+  /*
+    너무 두껍고 스티커처럼 보이지 않게
+    기존보다 글자 굵기와 외곽선을 줄임
+  */
   context.font =
-    '700 310px Arial, "Apple SD Gothic Neo", sans-serif';
+    '600 285px Arial, "Apple SD Gothic Neo", "Noto Sans", sans-serif';
 
   context.fillStyle = "#202020";
-  context.strokeStyle = "#202020";
 
-  context.lineWidth = 16;
+  /*
+    아주 얇은 stroke만 넣어서
+    문자 모양은 또렷하게 유지
+  */
+  context.strokeStyle = "#202020";
+  context.lineWidth = 5;
   context.lineJoin = "round";
   context.miterLimit = 2;
 
   context.strokeText(
     text || " ",
     256,
-    278
+    270
   );
 
   context.fillText(
     text || " ",
     256,
-    278
+    270
   );
 
   const texture =
@@ -213,6 +227,12 @@ function Eye3D({
     [text]
   );
 
+  useEffect(() => {
+    return () => {
+      texture?.dispose();
+    };
+  }, [texture]);
+
   if (!texture) {
     return null;
   }
@@ -221,16 +241,23 @@ function Eye3D({
     <mesh
       position={position}
       rotation={rotation}
+      renderOrder={10}
     >
+      {/*
+        기존 0.38 → 0.31
+        얼굴에서 눈이 너무 커 보이는 문제 완화
+      */}
       <planeGeometry
-        args={[0.38, 0.38]}
+        args={[0.31, 0.31]}
       />
 
       <meshBasicMaterial
         map={texture}
         transparent
-        alphaTest={0.02}
+        alphaTest={0.015}
         depthWrite={false}
+        polygonOffset
+        polygonOffsetFactor={-1}
         side={THREE.DoubleSide}
       />
     </mesh>
@@ -312,13 +339,20 @@ function CharacterModel({
   }, [object, bodyColor]);
 
   /*
-    ★ 중요 ★
+    ★ 기준은 캐릭터 기준이 아니라
+      우리가 정면에서 보는 화면 기준
 
-    아래 좌표는 "캐릭터 기준 왼/오"가 아니라
-    "우리가 정면 화면에서 보는 기준"으로 이름을 붙임.
+    화면 왼쪽  = leftEye
+    화면 오른쪽 = rightEye
+  */
 
-    viewerLeft  = 화면 왼쪽
-    viewerRight = 화면 오른쪽
+  /*
+    기존보다 눈을 얼굴 중앙으로 아주 조금 모음
+    기존:
+    -27.42 / -27.90
+
+    수정:
+    -27.47 / -27.85
   */
 
   const viewerLeftEyePosition: [
@@ -326,9 +360,9 @@ function CharacterModel({
     number,
     number
   ] = [
-    -27.42,
+    -27.47,
     1.42,
-    -23.73,
+    -23.715,
   ];
 
   const viewerRightEyePosition: [
@@ -336,13 +370,16 @@ function CharacterModel({
     number,
     number
   ] = [
-    -27.90,
+    -27.85,
     1.42,
-    -23.73,
+    -23.715,
   ];
 
   /*
-    얼굴 곡률에 맞춘 회전
+    얼굴 둥근 곡면을 따라가는 느낌
+
+    기존 ±0.18보다 조금 완만하게 해서
+    눈이 옆으로 꺾여 보이는 문제를 줄임
   */
 
   const viewerLeftEyeRotation: [
@@ -351,7 +388,7 @@ function CharacterModel({
     number
   ] = [
     0,
-    Math.PI - 0.18,
+    Math.PI - 0.11,
     0,
   ];
 
@@ -361,7 +398,7 @@ function CharacterModel({
     number
   ] = [
     0,
-    Math.PI + 0.18,
+    Math.PI + 0.11,
     0,
   ];
 
@@ -378,18 +415,26 @@ function CharacterModel({
       >
         <primitive object={model} />
 
-        {/* 우리가 화면에서 볼 때 왼쪽 눈 */}
+        {/* 화면에서 우리가 보는 왼쪽 눈 */}
         <Eye3D
           text={leftEye}
-          position={viewerLeftEyePosition}
-          rotation={viewerLeftEyeRotation}
+          position={
+            viewerLeftEyePosition
+          }
+          rotation={
+            viewerLeftEyeRotation
+          }
         />
 
-        {/* 우리가 화면에서 볼 때 오른쪽 눈 */}
+        {/* 화면에서 우리가 보는 오른쪽 눈 */}
         <Eye3D
           text={rightEye}
-          position={viewerRightEyePosition}
-          rotation={viewerRightEyeRotation}
+          position={
+            viewerRightEyePosition
+          }
+          rotation={
+            viewerRightEyeRotation
+          }
         />
       </group>
     </Center>
@@ -404,22 +449,34 @@ export default function Home() {
   const [step, setStep] =
     useState<Step>("start");
 
-  const [language, setLanguage] =
+  const [
+    language,
+    setLanguage,
+  ] =
     useState<Language | null>(
       null
     );
 
-  const [level, setLevel] =
+  const [
+    level,
+    setLevel,
+  ] =
     useState<Level | null>(
       null
     );
 
-  const [goal, setGoal] =
+  const [
+    goal,
+    setGoal,
+  ] =
     useState<Goal | null>(
       null
     );
 
-  const [space, setSpace] =
+  const [
+    space,
+    setSpace,
+  ] =
     useState<Space | null>(
       null
     );
@@ -428,12 +485,10 @@ export default function Home() {
     bodyColor,
     setBodyColor,
   ] =
-    useState("#BFFF00");
+    useState("#CDEB47");
 
   /*
-    이것도 사용자 화면 기준
-    leftEye = 화면 왼쪽
-    rightEye = 화면 오른쪽
+    화면 기준
   */
 
   const [
@@ -455,6 +510,13 @@ export default function Home() {
     "color" | "eyes"
   >("color");
 
+  const [
+    eyeTarget,
+    setEyeTarget,
+  ] = useState<
+    "left" | "right"
+  >("left");
+
   /* =====================================================
      COMMON UI
   ===================================================== */
@@ -466,9 +528,13 @@ export default function Home() {
       React.ReactNode;
   }) => (
     <div className="flex min-h-dvh items-center justify-center bg-[#F2F2F2]">
+
       <main className="relative flex h-dvh w-full max-w-[430px] flex-col overflow-hidden bg-[#F8F8F8] sm:h-[min(100dvh,844px)] sm:rounded-[2.5rem] sm:shadow-[0_24px_60px_rgba(32,32,32,0.08)]">
+
         {children}
+
       </main>
+
     </div>
   );
 
@@ -487,12 +553,14 @@ export default function Home() {
           "linear-gradient(135deg, rgba(255,255,255,0.82), rgba(255,255,255,0.35))",
       }}
     >
+
       <svg
         width="24"
         height="24"
         viewBox="0 0 24 24"
         fill="none"
       >
+
         <path
           d="M14.5 6.5L9 12L14.5 17.5"
           stroke="#202020"
@@ -500,7 +568,9 @@ export default function Home() {
           strokeLinecap="round"
           strokeLinejoin="round"
         />
+
       </svg>
+
     </button>
   );
 
@@ -593,52 +663,65 @@ export default function Home() {
 
           <div className="flex flex-col gap-3">
 
-            {languages.map((item) => {
-              const selected =
-                language === item.name;
+            {languages.map(
+              (item) => {
+                const selected =
+                  language ===
+                  item.name;
 
-              return (
-                <button
-                  key={item.name}
-                  type="button"
-                  onClick={() =>
-                    setLanguage(
+                return (
+                  <button
+                    key={
                       item.name
-                    )
-                  }
-                  className={`flex h-[72px] items-center gap-4 rounded-[22px] border-2 px-4 text-left ${
-                    selected
-                      ? "border-[#BFFF00] bg-[#F7FFE5]"
-                      : "border-transparent bg-white"
-                  }`}
-                >
-
-                  <div
-                    className={`flex h-11 w-11 items-center justify-center rounded-full text-lg font-bold ${
+                    }
+                    type="button"
+                    onClick={() =>
+                      setLanguage(
+                        item.name
+                      )
+                    }
+                    className={`flex h-[68px] shrink-0 items-center gap-4 rounded-[22px] border-2 px-4 text-left transition ${
                       selected
-                        ? "bg-[#BFFF00]"
-                        : "bg-[#F1F1F1]"
+                        ? "border-[#BFFF00] bg-[#F7FFE5]"
+                        : "border-transparent bg-white"
                     }`}
                   >
-                    {item.symbol}
-                  </div>
 
-                  <span className="font-semibold text-[#202020]">
-                    {item.name}
-                  </span>
+                    <div
+                      className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-lg font-bold ${
+                        selected
+                          ? "bg-[#BFFF00]"
+                          : "bg-[#F1F1F1]"
+                      }`}
+                    >
+                      {
+                        item.symbol
+                      }
+                    </div>
 
-                </button>
-              );
-            })}
+                    <span className="font-semibold text-[#202020]">
+                      {
+                        item.name
+                      }
+                    </span>
+
+                  </button>
+                );
+              }
+            )}
 
           </div>
+
+          <div className="h-6 shrink-0" />
 
         </div>
 
         <div className="px-6 pt-5 pb-[max(2rem,env(safe-area-inset-bottom))]">
 
           <BottomButton
-            disabled={!language}
+            disabled={
+              !language
+            }
             onClick={() =>
               setStep("info")
             }
@@ -664,7 +747,9 @@ export default function Home() {
 
           <BackButton
             onClick={() =>
-              setStep("language")
+              setStep(
+                "language"
+              )
             }
           />
 
@@ -680,28 +765,32 @@ export default function Home() {
 
           <section className="mb-8">
 
-            <h2 className="mb-3 font-bold">
+            <h2 className="mb-3 font-bold text-[#202020]">
               Your level
             </h2>
 
             <div className="grid grid-cols-3 gap-3">
 
-              {levels.map((item) => (
-                <button
-                  key={item}
-                  type="button"
-                  onClick={() =>
-                    setLevel(item)
-                  }
-                  className={`h-[76px] rounded-[22px] border-2 text-sm font-semibold ${
-                    level === item
-                      ? "border-[#BFFF00] bg-[#F7FFE5]"
-                      : "border-transparent bg-white"
-                  }`}
-                >
-                  {item}
-                </button>
-              ))}
+              {levels.map(
+                (item) => (
+                  <button
+                    key={item}
+                    type="button"
+                    onClick={() =>
+                      setLevel(
+                        item
+                      )
+                    }
+                    className={`h-[76px] rounded-[22px] border-2 text-sm font-semibold ${
+                      level === item
+                        ? "border-[#BFFF00] bg-[#F7FFE5]"
+                        : "border-transparent bg-white"
+                    }`}
+                  >
+                    {item}
+                  </button>
+                )
+              )}
 
             </div>
 
@@ -709,28 +798,32 @@ export default function Home() {
 
           <section>
 
-            <h2 className="mb-3 font-bold">
+            <h2 className="mb-3 font-bold text-[#202020]">
               Learning goal
             </h2>
 
             <div className="grid grid-cols-2 gap-3">
 
-              {goals.map((item) => (
-                <button
-                  key={item}
-                  type="button"
-                  onClick={() =>
-                    setGoal(item)
-                  }
-                  className={`h-[76px] rounded-[22px] border-2 font-semibold ${
-                    goal === item
-                      ? "border-[#BFFF00] bg-[#F7FFE5]"
-                      : "border-transparent bg-white"
-                  }`}
-                >
-                  {item}
-                </button>
-              ))}
+              {goals.map(
+                (item) => (
+                  <button
+                    key={item}
+                    type="button"
+                    onClick={() =>
+                      setGoal(
+                        item
+                      )
+                    }
+                    className={`h-[76px] rounded-[22px] border-2 font-semibold ${
+                      goal === item
+                        ? "border-[#BFFF00] bg-[#F7FFE5]"
+                        : "border-transparent bg-white"
+                    }`}
+                  >
+                    {item}
+                  </button>
+                )
+              )}
 
             </div>
 
@@ -741,9 +834,14 @@ export default function Home() {
         <div className="px-6 pt-5 pb-[max(2rem,env(safe-area-inset-bottom))]">
 
           <BottomButton
-            disabled={!level || !goal}
+            disabled={
+              !level ||
+              !goal
+            }
             onClick={() =>
-              setStep("character")
+              setStep(
+                "character"
+              )
             }
           >
             Next
@@ -779,8 +877,11 @@ export default function Home() {
             Create your PlaBla character.
           </p>
 
-          {/* 3D */}
-          <div className="relative mt-5 h-[285px] w-full overflow-hidden rounded-[30px] bg-white sm:h-[330px]">
+          {/* ======================
+              CHARACTER PREVIEW
+          ====================== */}
+
+          <div className="relative mt-5 h-[290px] w-full overflow-hidden rounded-[30px] bg-white">
 
             <Canvas
               camera={{
@@ -794,7 +895,7 @@ export default function Home() {
             >
 
               <ambientLight
-                intensity={2.7}
+                intensity={2.5}
               />
 
               <directionalLight
@@ -803,7 +904,7 @@ export default function Home() {
                   6,
                   6,
                 ]}
-                intensity={2.8}
+                intensity={2.5}
               />
 
               <directionalLight
@@ -812,19 +913,46 @@ export default function Home() {
                   2,
                   3,
                 ]}
-                intensity={1.4}
+                intensity={1.2}
               />
 
               <CharacterModel
-                bodyColor={bodyColor}
-                leftEye={leftEye}
-                rightEye={rightEye}
+                bodyColor={
+                  bodyColor
+                }
+                leftEye={
+                  leftEye
+                }
+                rightEye={
+                  rightEye
+                }
               />
+
+              {/*
+                좌우로만 회전
+                뒤쪽까지 완전히 돌아가지 못하게 제한
+              */}
 
               <OrbitControls
                 enablePan={false}
                 enableZoom={false}
-                enableRotate={true}
+
+                minPolarAngle={
+                  Math.PI / 2
+                }
+
+                maxPolarAngle={
+                  Math.PI / 2
+                }
+
+                minAzimuthAngle={
+                  -0.8
+                }
+
+                maxAzimuthAngle={
+                  0.8
+                }
+
                 target={[
                   0,
                   0.2,
@@ -837,19 +965,25 @@ export default function Home() {
           </div>
 
           <p className="mt-2 text-center text-xs text-[#202020]/30">
-            Drag to rotate
+            Drag left or right to rotate
           </p>
 
-          {/* 탭 */}
+          {/* ======================
+              TABS
+          ====================== */}
+
           <div className="mt-5 grid grid-cols-2 rounded-full bg-[#EEEEEE] p-1">
 
             <button
               type="button"
               onClick={() =>
-                setCharacterTab("color")
+                setCharacterTab(
+                  "color"
+                )
               }
               className={`rounded-full py-2.5 font-semibold transition ${
-                characterTab === "color"
+                characterTab ===
+                "color"
                   ? "bg-white text-[#202020] shadow-sm"
                   : "text-[#202020]/40"
               }`}
@@ -860,10 +994,13 @@ export default function Home() {
             <button
               type="button"
               onClick={() =>
-                setCharacterTab("eyes")
+                setCharacterTab(
+                  "eyes"
+                )
               }
               className={`rounded-full py-2.5 font-semibold transition ${
-                characterTab === "eyes"
+                characterTab ===
+                "eyes"
                   ? "bg-white text-[#202020] shadow-sm"
                   : "text-[#202020]/40"
               }`}
@@ -873,7 +1010,10 @@ export default function Home() {
 
           </div>
 
-          {/* COLOR */}
+          {/* ======================
+              COLOR
+          ====================== */}
+
           {characterTab === "color" && (
             <div className="mt-6">
 
@@ -883,35 +1023,44 @@ export default function Home() {
 
               <div className="flex flex-wrap gap-4 px-1 py-1">
 
-                {bodyColors.map((color) => (
-                  <button
-                    key={color.value}
-                    type="button"
-                    aria-label={color.name}
-                    onClick={() =>
-                      setBodyColor(
+                {bodyColors.map(
+                  (color) => (
+                    <button
+                      key={
                         color.value
-                      )
-                    }
-                    className={`h-12 w-12 shrink-0 rounded-full ${
-                      bodyColor ===
-                      color.value
-                        ? "ring-2 ring-[#202020] ring-offset-1 ring-offset-[#F8F8F8]"
-                        : ""
-                    }`}
-                    style={{
-                      backgroundColor:
-                        color.value,
-                    }}
-                  />
-                ))}
+                      }
+                      type="button"
+                      aria-label={
+                        color.name
+                      }
+                      onClick={() =>
+                        setBodyColor(
+                          color.value
+                        )
+                      }
+                      className={`h-12 w-12 shrink-0 rounded-full transition ${
+                        bodyColor ===
+                        color.value
+                          ? "ring-2 ring-[#202020] ring-offset-2 ring-offset-[#F8F8F8]"
+                          : ""
+                      }`}
+                      style={{
+                        backgroundColor:
+                          color.value,
+                      }}
+                    />
+                  )
+                )}
 
               </div>
 
             </div>
           )}
 
-          {/* EYES */}
+          {/* ======================
+              EYES
+          ====================== */}
+
           {characterTab === "eyes" && (
             <div className="mt-6">
 
@@ -919,25 +1068,77 @@ export default function Home() {
                 Eyes
               </p>
 
-              <p className="mb-5 text-xs text-[#202020]/40">
+              <p className="mb-5 text-xs leading-5 text-[#202020]/40">
                 Left and right are based on what you see on the screen.
               </p>
 
+              {/* 선택할 눈 */}
+
+              <div className="mb-4 grid grid-cols-2 rounded-[20px] bg-[#ECECEC] p-1">
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setEyeTarget(
+                      "left"
+                    )
+                  }
+                  className={`rounded-[17px] py-2.5 text-sm font-semibold transition ${
+                    eyeTarget ===
+                    "left"
+                      ? "bg-white text-[#202020] shadow-sm"
+                      : "text-[#202020]/40"
+                  }`}
+                >
+                  Left eye
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setEyeTarget(
+                      "right"
+                    )
+                  }
+                  className={`rounded-[17px] py-2.5 text-sm font-semibold transition ${
+                    eyeTarget ===
+                    "right"
+                      ? "bg-white text-[#202020] shadow-sm"
+                      : "text-[#202020]/40"
+                  }`}
+                >
+                  Right eye
+                </button>
+
+              </div>
+
               <div className="grid grid-cols-2 gap-3">
 
-                {/* 우리가 보는 왼쪽 */}
+                {/* LEFT */}
+
                 <div>
 
                   <label className="mb-2 block text-sm font-semibold text-[#202020]">
-                    Left eye
+                    Left
                   </label>
 
                   <input
-                    value={leftEye}
-                    onChange={(event) => {
+                    value={
+                      leftEye
+                    }
+                    onFocus={() =>
+                      setEyeTarget(
+                        "left"
+                      )
+                    }
+                    onChange={(
+                      event
+                    ) => {
                       const value =
                         Array.from(
-                          event.target.value
+                          event
+                            .target
+                            .value
                         );
 
                       setLeftEye(
@@ -949,24 +1150,41 @@ export default function Home() {
                     placeholder="の"
                     inputMode="text"
                     autoComplete="off"
-                    className="h-16 w-full rounded-[20px] border-2 border-transparent bg-white text-center text-2xl text-[#202020] outline-none transition focus:border-[#BFFF00]"
+                    className={`h-16 w-full rounded-[20px] border-2 bg-white text-center text-2xl text-[#202020] outline-none transition ${
+                      eyeTarget ===
+                      "left"
+                        ? "border-[#BFFF00]"
+                        : "border-transparent"
+                    }`}
                   />
 
                 </div>
 
-                {/* 우리가 보는 오른쪽 */}
+                {/* RIGHT */}
+
                 <div>
 
                   <label className="mb-2 block text-sm font-semibold text-[#202020]">
-                    Right eye
+                    Right
                   </label>
 
                   <input
-                    value={rightEye}
-                    onChange={(event) => {
+                    value={
+                      rightEye
+                    }
+                    onFocus={() =>
+                      setEyeTarget(
+                        "right"
+                      )
+                    }
+                    onChange={(
+                      event
+                    ) => {
                       const value =
                         Array.from(
-                          event.target.value
+                          event
+                            .target
+                            .value
                         );
 
                       setRightEye(
@@ -978,36 +1196,60 @@ export default function Home() {
                     placeholder="中"
                     inputMode="text"
                     autoComplete="off"
-                    className="h-16 w-full rounded-[20px] border-2 border-transparent bg-white text-center text-2xl text-[#202020] outline-none transition focus:border-[#BFFF00]"
+                    className={`h-16 w-full rounded-[20px] border-2 bg-white text-center text-2xl text-[#202020] outline-none transition ${
+                      eyeTarget ===
+                      "right"
+                        ? "border-[#BFFF00]"
+                        : "border-transparent"
+                    }`}
                   />
 
                 </div>
 
               </div>
 
+              {/* SUGGESTION */}
+
               <p className="mb-3 mt-6 text-sm font-semibold text-[#202020]">
                 Suggestions
               </p>
 
-              <div className="grid grid-cols-6 gap-2">
+              <div className="grid grid-cols-4 gap-2">
 
-                {eyeSuggestions.map((eye) => (
-                  <button
-                    key={eye}
-                    type="button"
-                    onClick={() =>
-                      setLeftEye(eye)
-                    }
-                    className="aspect-square rounded-[16px] bg-white text-xl text-[#202020]"
-                  >
-                    {eye}
-                  </button>
-                ))}
+                {eyeSuggestions.map(
+                  (eye) => (
+                    <button
+                      key={eye}
+                      type="button"
+                      onClick={() => {
+                        if (
+                          eyeTarget ===
+                          "left"
+                        ) {
+                          setLeftEye(
+                            eye
+                          );
+                        } else {
+                          setRightEye(
+                            eye
+                          );
+                        }
+                      }}
+                      className="flex h-14 items-center justify-center rounded-[18px] bg-white text-xl text-[#202020] transition active:scale-95"
+                    >
+                      {eye}
+                    </button>
+                  )
+                )}
 
               </div>
 
             </div>
           )}
+
+          {/* ======================
+              CONTINUE
+          ====================== */}
 
           <div className="mt-8 pb-[max(1rem,env(safe-area-inset-bottom))]">
 
@@ -1039,7 +1281,9 @@ export default function Home() {
 
           <BackButton
             onClick={() =>
-              setStep("character")
+              setStep(
+                "character"
+              )
             }
           />
 
@@ -1055,62 +1299,78 @@ export default function Home() {
 
           <div className="flex flex-col gap-4 pb-5">
 
-            {spaces.map((item) => {
-              const selected =
-                space === item.name;
+            {spaces.map(
+              (item) => {
+                const selected =
+                  space ===
+                  item.name;
 
-              return (
-                <button
-                  key={item.name}
-                  type="button"
-                  onClick={() =>
-                    setSpace(
+                return (
+                  <button
+                    key={
                       item.name
-                    )
-                  }
-                  className="overflow-hidden rounded-[26px] bg-white text-left"
-                >
-
-                  <div className="relative h-[155px]">
-
-                    <Image
-                      src={item.image}
-                      alt={item.name}
-                      fill
-                      className="object-cover"
-                    />
-
-                  </div>
-
-                  <div
-                    className={`flex items-center justify-between px-5 py-4 ${
-                      selected
-                        ? "bg-[#BFFF00]"
-                        : "bg-white"
-                    }`}
+                    }
+                    type="button"
+                    onClick={() =>
+                      setSpace(
+                        item.name
+                      )
+                    }
+                    className="overflow-hidden rounded-[26px] bg-white text-left"
                   >
 
-                    <div>
+                    <div className="relative h-[155px]">
 
-                      <p className="font-bold text-[#202020]">
-                        {item.name}
-                      </p>
-
-                      <p className="mt-1 text-xs text-[#202020]/50">
-                        {item.description}
-                      </p>
+                      <Image
+                        src={
+                          item.image
+                        }
+                        alt={
+                          item.name
+                        }
+                        fill
+                        className="object-cover"
+                      />
 
                     </div>
 
-                    <div className="rounded-full bg-white/75 px-3 py-2 text-xs font-semibold text-[#202020]">
-                      👥 {item.people}
+                    <div
+                      className={`flex items-center justify-between px-5 py-4 transition ${
+                        selected
+                          ? "bg-[#BFFF00]"
+                          : "bg-white"
+                      }`}
+                    >
+
+                      <div>
+
+                        <p className="font-bold text-[#202020]">
+                          {
+                            item.name
+                          }
+                        </p>
+
+                        <p className="mt-1 text-xs text-[#202020]/50">
+                          {
+                            item.description
+                          }
+                        </p>
+
+                      </div>
+
+                      <div className="rounded-full bg-white/75 px-3 py-2 text-xs font-semibold text-[#202020]">
+                        👥{" "}
+                        {
+                          item.people
+                        }
+                      </div>
+
                     </div>
 
-                  </div>
-
-                </button>
-              );
-            })}
+                  </button>
+                );
+              }
+            )}
 
           </div>
 
@@ -1119,9 +1379,13 @@ export default function Home() {
         <div className="px-6 pt-4 pb-[max(2rem,env(safe-area-inset-bottom))]">
 
           <BottomButton
-            disabled={!space}
+            disabled={
+              !space
+            }
             onClick={() =>
-              setStep("landscape")
+              setStep(
+                "landscape"
+              )
             }
           >
             Enter Space
@@ -1151,13 +1415,17 @@ export default function Home() {
         </h1>
 
         <p className="mt-4 text-sm text-white/50">
-          {language} · {level} · {goal}
+          {language} ·{" "}
+          {level} ·{" "}
+          {goal}
         </p>
 
         <button
           type="button"
           onClick={() =>
-            setStep("space")
+            setStep(
+              "space"
+            )
           }
           className="mt-10 rounded-full bg-[#BFFF00] px-8 py-3 font-bold text-[#202020]"
         >

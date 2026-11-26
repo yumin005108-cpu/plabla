@@ -9,10 +9,12 @@ import {
   useRef,
   useState,
 } from "react";
+
 import * as THREE from "three";
 
 import { Canvas, useLoader } from "@react-three/fiber";
 import { Center, OrbitControls } from "@react-three/drei";
+
 import { MTLLoader } from "three/examples/jsm/loaders/MTLLoader.js";
 import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader.js";
 
@@ -22,7 +24,6 @@ import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader.js";
 
 type Step =
   | "start"
-  | "app-language"
   | "language"
   | "info"
   | "character"
@@ -32,11 +33,7 @@ type Step =
   | "profile"
   | "settings";
 
-type AppTab =
-  | "home"
-  | "space"
-  | "profile"
-  | "settings";
+type AppTab = "home" | "space" | "profile" | "settings";
 
 type AppLanguage = "en" | "ko";
 
@@ -48,16 +45,9 @@ type Language =
   | "Spanish"
   | "French";
 
-type Level =
-  | "Beginner"
-  | "Intermediate"
-  | "Advanced";
+type Level = "Beginner" | "Intermediate" | "Advanced";
 
-type Goal =
-  | "Conversation"
-  | "Travel"
-  | "Study"
-  | "Culture";
+type Goal = "Conversation" | "Travel" | "Study" | "Culture";
 
 type Space =
   | "Mafia"
@@ -72,25 +62,16 @@ type CharacterTab = "color" | "eyes";
 type EyeTarget = "left" | "right";
 
 /* =====================================================
-   TRANSLATIONS
+   TRANSLATION
 ===================================================== */
 
 const translations = {
   en: {
-    chooseAppLanguage: "Choose your app language.",
-    chooseAppLanguageSub:
-      "You can change this anytime in Settings.",
-
-    appLanguage: "App language",
-    english: "English",
-    korean: "한국어",
-
     chooseLanguage: "Choose the language\nyou want to learn.",
     chooseLanguageSub: "Select one language to continue.",
 
     tellUs: "Tell us about\nyour learning.",
-    tellUsSub:
-      "This helps us find the right experience for you.",
+    tellUsSub: "This helps us find the right experience for you.",
 
     yourLevel: "Your level",
     learningGoal: "Learning goal",
@@ -104,8 +85,6 @@ const translations = {
     bodyColor: "Body color",
     leftEye: "Left eye",
     rightEye: "Right eye",
-    left: "Left",
-    right: "Right",
     suggestions: "Suggestions",
 
     next: "Next",
@@ -113,8 +92,10 @@ const translations = {
 
     hi: "Hi",
     readyToTalk: "Ready to talk?",
+
     learning: "Learning",
     goal: "Goal",
+
     jumpIntoSpace: "Jump into a space",
     seeAll: "See all",
 
@@ -125,41 +106,47 @@ const translations = {
 
     yourProfile: "Your profile.",
     profileSub: "Your PlaBla identity and learning setup.",
+
     language: "Language",
     level: "Level",
+
     editCharacter: "Edit character",
 
     settings: "Settings.",
     settingsSub: "Adjust your PlaBla experience.",
 
+    general: "General",
+    appLanguage: "App language",
+
     account: "Account",
     displayName: "Display name",
+    editName: "Edit name",
     edit: "Edit",
     save: "Save",
-    manageAccount: "Manage account",
-    localPrototype: "Local prototype account",
+    cancel: "Cancel",
 
-    general: "General",
+    manageAccount: "Manage account",
 
     learningSettings: "Learning",
     learningLanguage: "Learning language",
 
-    notificationsSection: "Notifications",
+    notificationsTitle: "Notifications",
+
     notifications: "Notifications",
     notificationsDesc: "Space invites and activity alerts",
+
     sound: "Sound",
     soundDesc: "Interface and game sounds",
+
     vibration: "Vibration",
     vibrationDesc: "Haptic feedback on supported devices",
 
     app: "App",
-    restartOnboarding: "Restart onboarding",
-    resetAppData: "Reset app data",
-    resetAppDataDesc: "Erase local PlaBla settings",
 
-    open: "Open",
-    restart: "Restart",
-    reset: "Reset",
+    setupAgain: "Set up my preferences again",
+
+    resetAppData: "Reset app data",
+    resetAppDataDesc: "Erase PlaBla settings on this device",
 
     home: "Home",
     spaces: "Spaces",
@@ -168,30 +155,18 @@ const translations = {
 
     customColor: "Custom color",
     customColorSub: "Preview it on your character first.",
-    cancel: "Cancel",
     select: "Select",
 
-    leftRightHelp:
+    eyeHelp:
       "Left and right are based on what you see on the screen.",
-
-    appLanguageChanged: "App language updated.",
   },
 
   ko: {
-    chooseAppLanguage: "앱 언어를 선택해주세요.",
-    chooseAppLanguageSub:
-      "설정에서 언제든 다시 변경할 수 있어요.",
-
-    appLanguage: "앱 언어",
-    english: "English",
-    korean: "한국어",
-
     chooseLanguage: "배우고 싶은\n언어를 선택해주세요.",
     chooseLanguageSub: "학습할 언어 하나를 선택해주세요.",
 
     tellUs: "학습 정보를\n알려주세요.",
-    tellUsSub:
-      "나에게 맞는 대화 경험을 추천하는 데 활용돼요.",
+    tellUsSub: "나에게 맞는 대화 경험을 추천하는 데 활용돼요.",
 
     yourLevel: "나의 레벨",
     learningGoal: "학습 목표",
@@ -205,8 +180,6 @@ const translations = {
     bodyColor: "바디 컬러",
     leftEye: "왼쪽 눈",
     rightEye: "오른쪽 눈",
-    left: "왼쪽",
-    right: "오른쪽",
     suggestions: "추천",
 
     next: "다음",
@@ -214,8 +187,10 @@ const translations = {
 
     hi: "안녕하세요",
     readyToTalk: "대화를 시작해볼까요?",
+
     learning: "학습 중",
     goal: "목표",
+
     jumpIntoSpace: "바로 참여하기",
     seeAll: "전체 보기",
 
@@ -226,41 +201,47 @@ const translations = {
 
     yourProfile: "나의 프로필.",
     profileSub: "PlaBla 캐릭터와 학습 설정을 확인해보세요.",
+
     language: "학습 언어",
     level: "레벨",
+
     editCharacter: "캐릭터 수정",
 
     settings: "설정",
     settingsSub: "PlaBla 환경을 원하는 대로 설정해보세요.",
 
+    general: "일반",
+    appLanguage: "앱 언어",
+
     account: "계정",
     displayName: "프로필 이름",
+    editName: "이름 수정",
     edit: "수정",
     save: "저장",
-    manageAccount: "계정 관리",
-    localPrototype: "현재 기기에 저장된 프로토타입 계정",
+    cancel: "취소",
 
-    general: "일반",
+    manageAccount: "계정 관리",
 
     learningSettings: "학습 설정",
     learningLanguage: "학습 언어",
 
-    notificationsSection: "알림 설정",
+    notificationsTitle: "알림 설정",
+
     notifications: "알림",
     notificationsDesc: "공간 초대 및 활동 알림",
+
     sound: "사운드",
     soundDesc: "인터페이스 및 게임 소리",
+
     vibration: "진동",
     vibrationDesc: "지원되는 기기에서 햅틱 피드백 사용",
 
     app: "앱",
-    restartOnboarding: "온보딩 다시 시작",
+
+    setupAgain: "처음부터 다시 설정하기",
+
     resetAppData: "앱 데이터 초기화",
     resetAppDataDesc: "이 기기에 저장된 PlaBla 설정 삭제",
-
-    open: "열기",
-    restart: "다시 시작",
-    reset: "초기화",
 
     home: "홈",
     spaces: "공간",
@@ -269,13 +250,10 @@ const translations = {
 
     customColor: "사용자 지정 컬러",
     customColorSub: "캐릭터에 적용된 모습을 먼저 확인해보세요.",
-    cancel: "취소",
     select: "선택",
 
-    leftRightHelp:
+    eyeHelp:
       "왼쪽과 오른쪽은 화면에서 보이는 방향을 기준으로 해요.",
-
-    appLanguageChanged: "앱 언어가 변경되었습니다.",
   },
 };
 
@@ -361,34 +339,13 @@ const goals: {
 ];
 
 const bodyColors = [
-  {
-    name: "Lime",
-    value: "#C7F238",
-  },
-  {
-    name: "Mint",
-    value: "#74DDD1",
-  },
-  {
-    name: "Blue",
-    value: "#78C0F0",
-  },
-  {
-    name: "Pink",
-    value: "#EE98CF",
-  },
-  {
-    name: "Yellow",
-    value: "#F7E66A",
-  },
-  {
-    name: "Purple",
-    value: "#B8A4F4",
-  },
-  {
-    name: "Peach",
-    value: "#FFB58E",
-  },
+  { name: "Lime", value: "#C7F238" },
+  { name: "Mint", value: "#74DDD1" },
+  { name: "Blue", value: "#78C0F0" },
+  { name: "Pink", value: "#EE98CF" },
+  { name: "Yellow", value: "#F7E66A" },
+  { name: "Purple", value: "#B8A4F4" },
+  { name: "Peach", value: "#FFB58E" },
 ];
 
 const eyeSuggestions = [
@@ -416,7 +373,7 @@ const spaces: {
     image: "/mafia.png",
     people: "6 / 8",
     description: "Discuss, suspect, and defend.",
-    koDescription: "의심하고, 토론하고, 서로를 설득해보세요.",
+    koDescription: "의심하고 토론하며 서로를 설득해보세요.",
   },
   {
     name: "Escape Room",
@@ -432,7 +389,7 @@ const spaces: {
     image: "/describe-guess.png",
     people: "5 / 8",
     description: "Describe it and let others guess.",
-    koDescription: "설명만 듣고 정답을 맞혀보세요.",
+    koDescription: "설명을 듣고 정답을 맞혀보세요.",
   },
   {
     name: "Shadowing",
@@ -448,7 +405,7 @@ const spaces: {
     image: "/balance-game.png",
     people: "6 / 10",
     description: "Choose a side and explain why.",
-    koDescription: "하나를 선택하고 이유를 이야기해보세요.",
+    koDescription: "하나를 고르고 그 이유를 이야기해보세요.",
   },
   {
     name: "Free Talk",
@@ -461,7 +418,7 @@ const spaces: {
 ];
 
 /* =====================================================
-   HELPERS
+   COLOR HELPERS
 ===================================================== */
 
 function hsvToHex(
@@ -607,14 +564,13 @@ function hexToHsv(
     s:
       max === 0
         ? 0
-        : delta /
-          max,
+        : delta / max,
     v: max,
   };
 }
 
 /* =====================================================
-   EYES
+   EYE TEXTURE
 ===================================================== */
 
 function createEyeTexture(
@@ -628,32 +584,32 @@ function createEyeTexture(
   canvas.width = 1024;
   canvas.height = 1024;
 
-  const context =
+  const ctx =
     canvas.getContext(
       "2d"
     );
 
-  if (!context) {
+  if (!ctx) {
     return null;
   }
 
-  context.clearRect(
+  ctx.clearRect(
     0,
     0,
     1024,
     1024
   );
 
-  context.textAlign =
+  ctx.textAlign =
     "center";
 
-  context.textBaseline =
+  ctx.textBaseline =
     "middle";
 
-  context.lineJoin =
+  ctx.lineJoin =
     "round";
 
-  context.lineCap =
+  ctx.lineCap =
     "round";
 
   const isLatin =
@@ -694,27 +650,26 @@ function createEyeTexture(
     fontSize = 565;
   }
 
-  context.font =
+  ctx.font =
     `650 ${fontSize}px ` +
     `"Pretendard Variable", ` +
-    `Pretendard, ` +
-    `Arial, sans-serif`;
+    `Pretendard, Arial, sans-serif`;
 
-  context.fillStyle =
+  ctx.fillStyle =
     "#272727";
 
-  context.strokeStyle =
+  ctx.strokeStyle =
     "#272727";
 
-  context.lineWidth = 4;
+  ctx.lineWidth = 4;
 
-  context.strokeText(
+  ctx.strokeText(
     text || " ",
     512,
     530
   );
 
-  context.fillText(
+  ctx.fillText(
     text || " ",
     512,
     530
@@ -739,6 +694,10 @@ function createEyeTexture(
 
   return texture;
 }
+
+/* =====================================================
+   EYE 3D
+===================================================== */
 
 function Eye3D({
   text,
@@ -770,30 +729,30 @@ function Eye3D({
   useEffect(() => {
     let active = true;
 
-    async function create() {
+    async function makeTexture() {
       await document.fonts.ready;
 
       if (!active) {
         return;
       }
 
-      const newTexture =
+      const next =
         createEyeTexture(
           text
         );
 
       setTexture(
         (
-          oldTexture
+          previous
         ) => {
-          oldTexture?.dispose();
+          previous?.dispose();
 
-          return newTexture;
+          return next;
         }
       );
     }
 
-    create();
+    makeTexture();
 
     return () => {
       active = false;
@@ -806,16 +765,11 @@ function Eye3D({
 
   return (
     <mesh
-      position={
-        position
-      }
-      rotation={
-        rotation
-      }
-      renderOrder={
-        50
-      }
+      position={position}
+      rotation={rotation}
+      renderOrder={50}
     >
+
       <planeGeometry
         args={[
           0.35,
@@ -824,21 +778,14 @@ function Eye3D({
       />
 
       <meshBasicMaterial
-        map={
-          texture
-        }
+        map={texture}
         transparent
-        alphaTest={
-          0.005
-        }
-        depthWrite={
-          false
-        }
+        alphaTest={0.005}
+        depthWrite={false}
         polygonOffset
-        polygonOffsetFactor={
-          -4
-        }
+        polygonOffsetFactor={-4}
       />
+
     </mesh>
   );
 }
@@ -897,18 +844,18 @@ function CharacterModel({
             return;
           }
 
-          const change =
+          const changeMaterial =
             (
-              material: THREE.Material
+              material:
+                THREE.Material
             ) => {
               const copy =
                 material.clone();
 
               if (
-                "color" in
-                  copy &&
                 copy.name ===
-                  "bodyColor_Green"
+                  "bodyColor_Green" &&
+                "color" in copy
               ) {
                 (
                   copy as THREE.MeshPhongMaterial
@@ -927,11 +874,11 @@ function CharacterModel({
           ) {
             child.material =
               child.material.map(
-                change
+                changeMaterial
               );
           } else {
             child.material =
-              change(
+              changeMaterial(
                 child.material
               );
           }
@@ -946,10 +893,9 @@ function CharacterModel({
 
   return (
     <Center>
+
       <group
-        scale={
-          0.64
-        }
+        scale={0.64}
         position={[
           0,
           0.18,
@@ -961,16 +907,13 @@ function CharacterModel({
           0,
         ]}
       >
+
         <primitive
-          object={
-            model
-          }
+          object={model}
         />
 
         <Eye3D
-          text={
-            leftEye
-          }
+          text={leftEye}
           position={[
             -27.46,
             1.43,
@@ -985,9 +928,7 @@ function CharacterModel({
         />
 
         <Eye3D
-          text={
-            rightEye
-          }
+          text={rightEye}
           position={[
             -27.86,
             1.43,
@@ -1000,10 +941,16 @@ function CharacterModel({
             0,
           ]}
         />
+
       </group>
+
     </Center>
   );
 }
+
+/* =====================================================
+   CHARACTER VIEW
+===================================================== */
 
 function CharacterView({
   bodyColor,
@@ -1031,6 +978,7 @@ function CharacterView({
           true,
       }}
     >
+
       <ambientLight
         intensity={
           2.45
@@ -1080,12 +1028,10 @@ function CharacterView({
             false
           }
           minPolarAngle={
-            Math.PI /
-            2
+            Math.PI / 2
           }
           maxPolarAngle={
-            Math.PI /
-            2
+            Math.PI / 2
           }
           minAzimuthAngle={
             -0.78
@@ -1100,12 +1046,13 @@ function CharacterView({
           ]}
         />
       )}
+
     </Canvas>
   );
 }
 
 /* =====================================================
-   COLOR PICKER
+   CUSTOM COLOR
 ===================================================== */
 
 function CustomColorPicker({
@@ -1120,23 +1067,49 @@ function CustomColorPicker({
   leftEye: string;
   rightEye: string;
   appLanguage: AppLanguage;
-  onCancel: () => void;
-  onSelect: (
-    color: string
-  ) => void;
+  onCancel:
+    () => void;
+  onSelect:
+    (
+      color: string
+    ) => void;
 }) {
   const t =
     translations[
       appLanguage
     ];
 
-  const initialHSV =
+  const initial =
     useMemo(
       () =>
         hexToHsv(
           initialColor
         ),
       [initialColor]
+    );
+
+  const [
+    hue,
+    setHue,
+  ] =
+    useState(
+      initial.h
+    );
+
+  const [
+    saturation,
+    setSaturation,
+  ] =
+    useState(
+      initial.s
+    );
+
+  const [
+    brightness,
+    setBrightness,
+  ] =
+    useState(
+      initial.v
     );
 
   const squareRef =
@@ -1147,30 +1120,6 @@ function CustomColorPicker({
   const hueRef =
     useRef<HTMLDivElement>(
       null
-    );
-
-  const [
-    hue,
-    setHue,
-  ] =
-    useState(
-      initialHSV.h
-    );
-
-  const [
-    saturation,
-    setSaturation,
-  ] =
-    useState(
-      initialHSV.s
-    );
-
-  const [
-    brightness,
-    setBrightness,
-  ] =
-    useState(
-      initialHSV.v
     );
 
   const previewColor =
@@ -1260,7 +1209,7 @@ function CustomColorPicker({
   }
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/20 px-4 backdrop-blur-[3px]">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/25 px-4 backdrop-blur-[3px]">
 
       <div className="hide-scrollbar max-h-[94dvh] w-full max-w-[390px] overflow-y-auto rounded-[30px] bg-white p-5">
 
@@ -1309,9 +1258,7 @@ function CustomColorPicker({
         </div>
 
         <div
-          ref={
-            squareRef
-          }
+          ref={squareRef}
           onPointerDown={(
             event
           ) => {
@@ -1378,9 +1325,7 @@ function CustomColorPicker({
         </div>
 
         <div
-          ref={
-            hueRef
-          }
+          ref={hueRef}
           onPointerDown={(
             event
           ) => {
@@ -1543,17 +1488,13 @@ export default function Home() {
     leftEye,
     setLeftEye,
   ] =
-    useState(
-      "P"
-    );
+    useState("P");
 
   const [
     rightEye,
     setRightEye,
   ] =
-    useState(
-      "B"
-    );
+    useState("B");
 
   const [
     characterTab,
@@ -1586,8 +1527,16 @@ export default function Home() {
     );
 
   const [
-    editingName,
-    setEditingName,
+    profileNameDraft,
+    setProfileNameDraft,
+  ] =
+    useState(
+      "Bunnies"
+    );
+
+  const [
+    editingProfileName,
+    setEditingProfileName,
   ] =
     useState(false);
 
@@ -1610,6 +1559,12 @@ export default function Home() {
     useState(true);
 
   const [
+    onboardingComplete,
+    setOnboardingComplete,
+  ] =
+    useState(false);
+
+  const [
     loaded,
     setLoaded,
   ] =
@@ -1621,7 +1576,7 @@ export default function Home() {
     ];
 
   /* =====================================================
-     STORAGE LOAD
+     LOAD
   ===================================================== */
 
   useEffect(() => {
@@ -1638,7 +1593,10 @@ export default function Home() {
           );
 
         if (
-          data.appLanguage
+          data.appLanguage ===
+            "ko" ||
+          data.appLanguage ===
+            "en"
         ) {
           setAppLanguage(
             data.appLanguage
@@ -1699,6 +1657,10 @@ export default function Home() {
           setDisplayName(
             data.displayName
           );
+
+          setProfileNameDraft(
+            data.displayName
+          );
         }
 
         if (
@@ -1729,8 +1691,13 @@ export default function Home() {
         }
 
         if (
-          data.onboardingComplete
+          data.onboardingComplete ===
+          true
         ) {
+          setOnboardingComplete(
+            true
+          );
+
           setStep(
             "home"
           );
@@ -1746,24 +1713,13 @@ export default function Home() {
   }, []);
 
   /* =====================================================
-     STORAGE SAVE
+     SAVE
   ===================================================== */
 
   useEffect(() => {
     if (!loaded) {
       return;
     }
-
-    const onboardingComplete =
-      [
-        "home",
-        "space",
-        "profile",
-        "settings",
-        "landscape",
-      ].includes(
-        step
-      );
 
     localStorage.setItem(
       "plabla-settings",
@@ -1784,7 +1740,6 @@ export default function Home() {
     );
   }, [
     loaded,
-    step,
     appLanguage,
     language,
     level,
@@ -1796,15 +1751,17 @@ export default function Home() {
     notifications,
     sound,
     vibration,
+    onboardingComplete,
   ]);
 
   /* =====================================================
-     INTRO
+     START
   ===================================================== */
 
   useEffect(() => {
     if (
       !loaded ||
+      onboardingComplete ||
       step !== "start"
     ) {
       return;
@@ -1813,7 +1770,7 @@ export default function Home() {
     const timer =
       setTimeout(() => {
         setStep(
-          "app-language"
+          "language"
         );
       }, 2000);
 
@@ -1822,8 +1779,9 @@ export default function Home() {
         timer
       );
   }, [
-    step,
     loaded,
+    onboardingComplete,
+    step,
   ]);
 
   /* =====================================================
@@ -1833,8 +1791,23 @@ export default function Home() {
   const headlineClass =
     appLanguage ===
     "ko"
-      ? "font-korean-headline text-[35px] font-bold leading-[1.2] tracking-[-0.025em] text-[#202020]"
-      : "font-fredoka text-[35px] font-medium leading-[1.08] tracking-[-0.015em] text-[#202020]";
+      ? "text-[35px] leading-[1.28] tracking-[-0.025em] text-[#202020]"
+      : "font-fredoka text-[35px] font-medium leading-[1.1] tracking-[-0.01em] text-[#202020]";
+
+  /*
+    한국어일 때 SOYO Maple을
+    직접 강제 적용
+  */
+
+  const headlineStyle =
+    appLanguage ===
+    "ko"
+      ? {
+          fontFamily:
+            '"SOYOMaple", sans-serif',
+          fontWeight: 700,
+        }
+      : undefined;
 
   const bodyClass =
     "font-pretendard text-[15px] font-normal leading-6 tracking-[-0.01em]";
@@ -1843,10 +1816,19 @@ export default function Home() {
     "font-pretendard text-[17px] font-semibold tracking-[-0.01em] text-[#202020]";
 
   const selectionClass =
-    "font-pretendard text-[16px] font-semibold tracking-[-0.01em]";
+    "font-pretendard text-[16px] font-semibold tracking-[-0.01em] text-[#202020]";
+
+  const isPresetColor =
+    bodyColors.some(
+      (
+        item
+      ) =>
+        item.value.toLowerCase() ===
+        bodyColor.toLowerCase()
+    );
 
   /* =====================================================
-     COMMON
+     COMMON COMPONENTS
   ===================================================== */
 
   const MobileFrame = ({
@@ -1866,32 +1848,22 @@ export default function Home() {
     </div>
   );
 
-  const BottomButton = ({
+  const Headline = ({
     children,
-    disabled,
-    onClick,
+    className = "",
   }: {
     children:
       ReactNode;
-    disabled?: boolean;
-    onClick: () => void;
+    className?: string;
   }) => (
-    <button
-      type="button"
-      disabled={
-        disabled
+    <h1
+      className={`${headlineClass} ${className}`}
+      style={
+        headlineStyle
       }
-      onClick={
-        onClick
-      }
-      className={`font-pretendard h-14 w-full rounded-full text-[17px] font-semibold ${
-        disabled
-          ? "bg-[#E5E5E5] text-[#999]"
-          : "bg-[#BFFF00] text-[#202020]"
-      }`}
     >
       {children}
-    </button>
+    </h1>
   );
 
   const BackButton = ({
@@ -1905,11 +1877,53 @@ export default function Home() {
       onClick={
         onClick
       }
-      className="mb-6 flex h-14 w-14 items-center justify-center rounded-full bg-white shadow"
+      className="mb-6 flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-white shadow-[0_10px_30px_rgba(0,0,0,0.08)]"
     >
-      <span className="text-[30px]">
-        ‹
-      </span>
+
+      <svg
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+      >
+        <path
+          d="M14.5 6.5L9 12L14.5 17.5"
+          stroke="#202020"
+          strokeWidth="2.6"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+
+    </button>
+  );
+
+  const BottomButton = ({
+    children,
+    disabled,
+    onClick,
+  }: {
+    children:
+      ReactNode;
+    disabled?: boolean;
+    onClick:
+      () => void;
+  }) => (
+    <button
+      type="button"
+      disabled={
+        disabled
+      }
+      onClick={
+        onClick
+      }
+      className={`font-pretendard h-14 w-full rounded-full text-[17px] font-semibold ${
+        disabled
+          ? "bg-[#E5E5E5] text-[#999999]"
+          : "bg-[#BFFF00] text-[#202020]"
+      }`}
+    >
+      {children}
     </button>
   );
 
@@ -1926,19 +1940,21 @@ export default function Home() {
       onClick={
         onChange
       }
-      className={`relative h-7 w-12 rounded-full ${
+      className={`relative h-7 w-12 shrink-0 rounded-full transition ${
         value
           ? "bg-[#BFFF00]"
           : "bg-[#D7D7D7]"
       }`}
     >
+
       <div
-        className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow ${
+        className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow transition-all ${
           value
             ? "left-6"
             : "left-1"
         }`}
       />
+
     </button>
   );
 
@@ -1948,32 +1964,31 @@ export default function Home() {
     current:
       AppTab;
   }) => {
-    const tabs: {
-      key: AppTab;
-      en: string;
-      ko: string;
-      icon: string;
-    }[] = [
+    const nav = [
       {
-        key: "home",
+        key:
+          "home" as const,
         en: "Home",
         ko: "홈",
         icon: "⌂",
       },
       {
-        key: "space",
+        key:
+          "space" as const,
         en: "Spaces",
         ko: "공간",
         icon: "▦",
       },
       {
-        key: "profile",
+        key:
+          "profile" as const,
         en: "Profile",
         ko: "프로필",
         icon: "○",
       },
       {
-        key: "settings",
+        key:
+          "settings" as const,
         en: "Settings",
         ko: "설정",
         icon: "⚙",
@@ -1985,7 +2000,7 @@ export default function Home() {
 
         <div className="grid grid-cols-4">
 
-          {tabs.map(
+          {nav.map(
             (
               item
             ) => {
@@ -2065,12 +2080,8 @@ export default function Home() {
           <Image
             src="/plabla-logo-transparent.svg"
             alt="PlaBla"
-            width={
-              210
-            }
-            height={
-              140
-            }
+            width={210}
+            height={140}
             priority
           />
 
@@ -2081,120 +2092,7 @@ export default function Home() {
   }
 
   /* =====================================================
-     APP LANGUAGE
-  ===================================================== */
-
-  if (
-    step ===
-    "app-language"
-  ) {
-    return (
-      <MobileFrame>
-
-        <div className="flex flex-1 flex-col px-6 pt-10">
-
-          <h1
-            className={
-              headlineClass
-            }
-          >
-            {
-              t.chooseAppLanguage
-            }
-          </h1>
-
-          <p
-            className={`${bodyClass} mt-3 text-[#202020]/45`}
-          >
-            {
-              t.chooseAppLanguageSub
-            }
-          </p>
-
-          <div className="mt-10 space-y-3">
-
-            <button
-              type="button"
-              onClick={() =>
-                setAppLanguage(
-                  "en"
-                )
-              }
-              className={`flex h-[74px] w-full items-center justify-between rounded-[22px] border-2 px-5 ${
-                appLanguage ===
-                "en"
-                  ? "border-[#BFFF00] bg-[#F7FFE5]"
-                  : "border-transparent bg-white"
-              }`}
-            >
-
-              <span className="font-pretendard text-[17px] font-semibold">
-                English
-              </span>
-
-              {appLanguage ===
-                "en" && (
-                <span>
-                  ✓
-                </span>
-              )}
-
-            </button>
-
-            <button
-              type="button"
-              onClick={() =>
-                setAppLanguage(
-                  "ko"
-                )
-              }
-              className={`flex h-[74px] w-full items-center justify-between rounded-[22px] border-2 px-5 ${
-                appLanguage ===
-                "ko"
-                  ? "border-[#BFFF00] bg-[#F7FFE5]"
-                  : "border-transparent bg-white"
-              }`}
-            >
-
-              <span className="font-pretendard text-[17px] font-semibold">
-                한국어
-              </span>
-
-              {appLanguage ===
-                "ko" && (
-                <span>
-                  ✓
-                </span>
-              )}
-
-            </button>
-
-          </div>
-
-          <div className="mt-auto pb-8">
-
-            <BottomButton
-              onClick={() =>
-                setStep(
-                  "language"
-                )
-              }
-            >
-              {
-                t.next
-              }
-            </BottomButton>
-
-          </div>
-
-        </div>
-
-      </MobileFrame>
-    );
-  }
-
-  /* =====================================================
-     LEARNING LANGUAGE
+     LANGUAGE
   ===================================================== */
 
   if (
@@ -2204,25 +2102,12 @@ export default function Home() {
     return (
       <MobileFrame>
 
-        <div className="hide-scrollbar flex-1 overflow-y-auto px-6 pt-8">
+        <div className="hide-scrollbar flex-1 overflow-y-auto px-6 pt-10">
 
-          <BackButton
-            onClick={() =>
-              setStep(
-                "app-language"
-              )
-            }
-          />
+          <Headline>
 
-          <h1
-            className={
-              headlineClass
-            }
-          >
             {t.chooseLanguage
-              .split(
-                "\n"
-              )
+              .split("\n")
               .map(
                 (
                   line,
@@ -2236,11 +2121,17 @@ export default function Home() {
                     {
                       line
                     }
-                    <br />
+
+                    {index ===
+                      0 && (
+                      <br />
+                    )}
+
                   </span>
                 )
               )}
-          </h1>
+
+          </Headline>
 
           <p
             className={`${bodyClass} mb-7 mt-3 text-[#202020]/45`}
@@ -2255,51 +2146,55 @@ export default function Home() {
             {languages.map(
               (
                 item
-              ) => (
-                <button
-                  key={
-                    item.name
-                  }
-                  type="button"
-                  onClick={() =>
-                    setLanguage(
-                      item.name
-                    )
-                  }
-                  className={`flex h-[68px] w-full items-center gap-4 rounded-[22px] border-2 px-4 ${
-                    language ===
-                    item.name
-                      ? "border-[#BFFF00] bg-[#F7FFE5]"
-                      : "border-transparent bg-white"
-                  }`}
-                >
+              ) => {
+                const selected =
+                  language ===
+                  item.name;
 
-                  <div
-                    className={`flex h-11 w-11 items-center justify-center rounded-full font-pretendard text-[18px] font-semibold ${
-                      language ===
+                return (
+                  <button
+                    key={
                       item.name
-                        ? "bg-[#BFFF00]"
-                        : "bg-[#F1F1F1]"
+                    }
+                    type="button"
+                    onClick={() =>
+                      setLanguage(
+                        item.name
+                      )
+                    }
+                    className={`flex h-[68px] w-full items-center gap-4 rounded-[22px] border-2 px-4 ${
+                      selected
+                        ? "border-[#BFFF00] bg-[#F7FFE5]"
+                        : "border-transparent bg-white"
                     }`}
                   >
-                    {
-                      item.symbol
-                    }
-                  </div>
 
-                  <span
-                    className={
-                      selectionClass
-                    }
-                  >
-                    {appLanguage ===
-                    "ko"
-                      ? item.ko
-                      : item.name}
-                  </span>
+                    <div
+                      className={`font-pretendard flex h-11 w-11 items-center justify-center rounded-full text-[18px] font-semibold ${
+                        selected
+                          ? "bg-[#BFFF00]"
+                          : "bg-[#F1F1F1]"
+                      }`}
+                    >
+                      {
+                        item.symbol
+                      }
+                    </div>
 
-                </button>
-              )
+                    <span
+                      className={
+                        selectionClass
+                      }
+                    >
+                      {appLanguage ===
+                      "ko"
+                        ? item.ko
+                        : item.name}
+                    </span>
+
+                  </button>
+                );
+              }
             )}
 
           </div>
@@ -2350,32 +2245,34 @@ export default function Home() {
             }
           />
 
-          <h1
-            className={
-              headlineClass
-            }
-          >
+          <Headline>
+
             {t.tellUs
-              .split(
-                "\n"
-              )
+              .split("\n")
               .map(
                 (
-                  line
+                  line,
+                  index
                 ) => (
                   <span
                     key={
-                      line
+                      index
                     }
                   >
                     {
                       line
                     }
-                    <br />
+
+                    {index ===
+                      0 && (
+                      <br />
+                    )}
+
                   </span>
                 )
               )}
-          </h1>
+
+          </Headline>
 
           <p
             className={`${bodyClass} mb-8 mt-3 text-[#202020]/45`}
@@ -2416,6 +2313,7 @@ export default function Home() {
                       : "border-transparent bg-white"
                   }`}
                 >
+
                   <span
                     className={
                       selectionClass
@@ -2426,6 +2324,7 @@ export default function Home() {
                       ? item.ko
                       : item.value}
                   </span>
+
                 </button>
               )
             )}
@@ -2463,6 +2362,7 @@ export default function Home() {
                       : "border-transparent bg-white"
                   }`}
                 >
+
                   <span
                     className={
                       selectionClass
@@ -2473,6 +2373,7 @@ export default function Home() {
                       ? item.ko
                       : item.value}
                   </span>
+
                 </button>
               )
             )}
@@ -2559,15 +2460,11 @@ export default function Home() {
             }
           />
 
-          <h1
-            className={
-              headlineClass
-            }
-          >
+          <Headline>
             {
               t.makeItYours
             }
-          </h1>
+          </Headline>
 
           <p
             className={`${bodyClass} mt-3 text-[#202020]/45`}
@@ -2612,7 +2509,7 @@ export default function Home() {
               className={`rounded-full py-2.5 ${
                 characterTab ===
                 "color"
-                  ? "bg-white shadow"
+                  ? "bg-white shadow-sm"
                   : ""
               }`}
             >
@@ -2637,7 +2534,7 @@ export default function Home() {
               className={`rounded-full py-2.5 ${
                 characterTab ===
                 "eyes"
-                  ? "bg-white shadow"
+                  ? "bg-white shadow-sm"
                   : ""
               }`}
             >
@@ -2703,15 +2600,21 @@ export default function Home() {
                       true
                     )
                   }
-                  className="flex h-12 w-12 items-center justify-center rounded-full"
+                  className={`flex h-12 w-12 items-center justify-center rounded-full ${
+                    !isPresetColor
+                      ? "ring-2 ring-[#202020] ring-offset-2"
+                      : ""
+                  }`}
                   style={{
                     background:
                       "conic-gradient(#f55,#fd3,#5f8,#4df,#57f,#b5f,#f6c,#f55)",
                   }}
                 >
+
                   <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white font-semibold">
                     +
                   </span>
+
                 </button>
 
               </div>
@@ -2735,51 +2638,61 @@ export default function Home() {
 
               <p className="font-pretendard mt-1 text-[13px] text-[#202020]/40">
                 {
-                  t.leftRightHelp
+                  t.eyeHelp
                 }
               </p>
 
               <div className="mt-4 grid grid-cols-2 rounded-[20px] bg-[#ECECEC] p-1">
 
-                {(
-                  [
-                    "left",
-                    "right",
-                  ] as EyeTarget[]
-                ).map(
-                  (
-                    item
-                  ) => (
-                    <button
-                      key={
-                        item
-                      }
-                      type="button"
-                      onClick={() =>
-                        setEyeTarget(
-                          item
-                        )
-                      }
-                      className={`rounded-[17px] py-2.5 ${
-                        eyeTarget ===
-                        item
-                          ? "bg-white shadow"
-                          : ""
-                      }`}
-                    >
-                      <span
-                        className={
-                          selectionClass
-                        }
-                      >
-                        {item ===
-                        "left"
-                          ? t.leftEye
-                          : t.rightEye}
-                      </span>
-                    </button>
-                  )
-                )}
+                <button
+                  type="button"
+                  onClick={() =>
+                    setEyeTarget(
+                      "left"
+                    )
+                  }
+                  className={`rounded-[17px] py-2.5 ${
+                    eyeTarget ===
+                    "left"
+                      ? "bg-white shadow-sm"
+                      : ""
+                  }`}
+                >
+                  <span
+                    className={
+                      selectionClass
+                    }
+                  >
+                    {
+                      t.leftEye
+                    }
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setEyeTarget(
+                      "right"
+                    )
+                  }
+                  className={`rounded-[17px] py-2.5 ${
+                    eyeTarget ===
+                    "right"
+                      ? "bg-white shadow-sm"
+                      : ""
+                  }`}
+                >
+                  <span
+                    className={
+                      selectionClass
+                    }
+                  >
+                    {
+                      t.rightEye
+                    }
+                  </span>
+                </button>
 
               </div>
 
@@ -2799,19 +2712,13 @@ export default function Home() {
                   ) =>
                     setLeftEye(
                       Array.from(
-                        event
-                          .target
-                          .value
+                        event.target.value
                       )
-                        .slice(
-                          -1
-                        )
-                        .join(
-                          ""
-                        )
+                        .slice(-1)
+                        .join("")
                     )
                   }
-                  className="font-pretendard h-16 rounded-[20px] bg-white text-center text-[24px] font-semibold"
+                  className="font-pretendard h-16 rounded-[20px] bg-white text-center text-[24px] font-semibold outline-none"
                 />
 
                 <input
@@ -2828,19 +2735,13 @@ export default function Home() {
                   ) =>
                     setRightEye(
                       Array.from(
-                        event
-                          .target
-                          .value
+                        event.target.value
                       )
-                        .slice(
-                          -1
-                        )
-                        .join(
-                          ""
-                        )
+                        .slice(-1)
+                        .join("")
                     )
                   }
-                  className="font-pretendard h-16 rounded-[20px] bg-white text-center text-[24px] font-semibold"
+                  className="font-pretendard h-16 rounded-[20px] bg-white text-center text-[24px] font-semibold outline-none"
                 />
 
               </div>
@@ -2895,11 +2796,15 @@ export default function Home() {
           <div className="my-8">
 
             <BottomButton
-              onClick={() =>
+              onClick={() => {
+                setOnboardingComplete(
+                  true
+                );
+
                 setStep(
                   "home"
-                )
-              }
+                );
+              }}
             >
               {
                 t.continue
@@ -2928,19 +2833,21 @@ export default function Home() {
         <div className="hide-scrollbar flex-1 overflow-y-auto px-6 pt-8">
 
           <p className="font-pretendard text-[14px] text-[#202020]/40">
-            {t.hi},{" "}
+            {
+              t.hi
+            },{" "}
             {
               displayName
             }
           </p>
 
-          <h1
-            className={`${headlineClass} mt-1`}
+          <Headline
+            className="mt-1"
           >
             {
               t.readyToTalk
             }
-          </h1>
+          </Headline>
 
           <div className="mt-6 overflow-hidden rounded-[28px] bg-white">
 
@@ -3000,7 +2907,7 @@ export default function Home() {
 
           </div>
 
-          <div className="mt-7 flex justify-between">
+          <div className="mt-7 flex items-center justify-between">
 
             <h2
               className={
@@ -3074,12 +2981,10 @@ export default function Home() {
                     <div className="px-4 py-3">
 
                       <p className="font-pretendard text-[14px] font-semibold">
-
                         {appLanguage ===
                         "ko"
                           ? item.ko
                           : item.name}
-
                       </p>
 
                     </div>
@@ -3113,32 +3018,30 @@ export default function Home() {
 
         <div className="hide-scrollbar flex-1 overflow-y-auto px-6 pt-8">
 
-          <h1
-            className={
-              headlineClass
-            }
-          >
+          <Headline>
+
             {t.spacesTitle
-              .split(
-                "\n"
-              )
+              .split("\n")
               .map(
                 (
-                  line
+                  line,
+                  index
                 ) => (
                   <span
                     key={
-                      line
+                      index
                     }
                   >
                     {
                       line
                     }
+
                     <br />
                   </span>
                 )
               )}
-          </h1>
+
+          </Headline>
 
           <p
             className={`${bodyClass} mb-6 mt-3 text-[#202020]/45`}
@@ -3191,26 +3094,22 @@ export default function Home() {
                     <div>
 
                       <p className="font-pretendard text-[17px] font-semibold">
-
                         {appLanguage ===
                         "ko"
                           ? item.ko
                           : item.name}
-
                       </p>
 
                       <p className="font-pretendard mt-1 text-[13px] text-[#202020]/45">
-
                         {appLanguage ===
                         "ko"
                           ? item.koDescription
                           : item.description}
-
                       </p>
 
                     </div>
 
-                    <span className="font-pretendard rounded-full bg-[#F2F2F2] px-3 py-2 text-[13px] font-semibold">
+                    <span className="font-pretendard shrink-0 rounded-full bg-[#F2F2F2] px-3 py-2 text-[13px] font-semibold">
                       👥{" "}
                       {
                         item.people
@@ -3236,7 +3135,7 @@ export default function Home() {
   }
 
   /* =====================================================
-     SPACE ENTER
+     ENTER SPACE
   ===================================================== */
 
   if (
@@ -3259,6 +3158,7 @@ export default function Home() {
 
           {current && (
             <>
+
               <Image
                 src={
                   current.image
@@ -3281,9 +3181,9 @@ export default function Home() {
                       "space"
                     )
                   }
-                  className="flex h-12 w-12 items-center justify-center rounded-full bg-white text-[28px]"
+                  className="flex h-12 w-12 items-center justify-center rounded-full bg-white"
                 >
-                  ‹
+                  ←
                 </button>
 
                 <div className="mt-auto">
@@ -3298,8 +3198,19 @@ export default function Home() {
                     className={
                       appLanguage ===
                       "ko"
-                        ? "font-korean-headline mt-1 text-[38px] text-white"
-                        : "font-fredoka mt-1 text-[38px] text-white"
+                        ? "mt-1 text-[38px] leading-[1.25] text-white"
+                        : "font-fredoka mt-1 text-[38px] font-medium text-white"
+                    }
+                    style={
+                      appLanguage ===
+                      "ko"
+                        ? {
+                            fontFamily:
+                              '"SOYOMaple", sans-serif',
+                            fontWeight:
+                              700,
+                          }
+                        : undefined
                     }
                   >
                     {appLanguage ===
@@ -3308,9 +3219,17 @@ export default function Home() {
                       : current.name}
                   </h1>
 
+                  <p className="font-pretendard mt-3 text-[14px] text-white/60">
+                    {appLanguage ===
+                    "ko"
+                      ? current.koDescription
+                      : current.description}
+                  </p>
+
                 </div>
 
               </div>
+
             </>
           )}
 
@@ -3337,15 +3256,11 @@ export default function Home() {
 
         <div className="hide-scrollbar flex-1 overflow-y-auto px-6 pt-8">
 
-          <h1
-            className={
-              headlineClass
-            }
-          >
+          <Headline>
             {
               t.yourProfile
             }
-          </h1>
+          </Headline>
 
           <p
             className={`${bodyClass} mt-3 text-[#202020]/45`}
@@ -3373,13 +3288,111 @@ export default function Home() {
 
           <div className="mt-4 rounded-[24px] bg-white p-5">
 
-            <p className="font-pretendard text-[19px] font-semibold">
-              {
-                displayName
-              }
-            </p>
+            {!editingProfileName ? (
+              <div className="flex items-center justify-between">
 
-            <div className="mt-5 space-y-4 font-pretendard text-[14px]">
+                <p className="font-pretendard text-[19px] font-semibold">
+                  {
+                    displayName
+                  }
+                </p>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setProfileNameDraft(
+                      displayName
+                    );
+
+                    setEditingProfileName(
+                      true
+                    );
+                  }}
+                  className="font-pretendard rounded-full bg-[#F1F1F1] px-4 py-2 text-[12px] font-semibold"
+                >
+                  {
+                    t.editName
+                  }
+                </button>
+
+              </div>
+            ) : (
+              <div>
+
+                <p className="font-pretendard mb-2 text-[12px] text-[#202020]/40">
+                  {
+                    t.displayName
+                  }
+                </p>
+
+                <input
+                  value={
+                    profileNameDraft
+                  }
+                  maxLength={
+                    20
+                  }
+                  onChange={(
+                    event
+                  ) =>
+                    setProfileNameDraft(
+                      event.target.value
+                    )
+                  }
+                  className="font-pretendard h-[50px] w-full rounded-[16px] bg-[#F5F5F5] px-4 outline-none"
+                />
+
+                <div className="mt-3 grid grid-cols-2 gap-2">
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setProfileNameDraft(
+                        displayName
+                      );
+
+                      setEditingProfileName(
+                        false
+                      );
+                    }}
+                    className="font-pretendard h-11 rounded-full bg-[#EEEEEE] text-[14px] font-semibold"
+                  >
+                    {
+                      t.cancel
+                    }
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const trimmed =
+                        profileNameDraft.trim();
+
+                      if (
+                        trimmed
+                      ) {
+                        setDisplayName(
+                          trimmed
+                        );
+                      }
+
+                      setEditingProfileName(
+                        false
+                      );
+                    }}
+                    className="font-pretendard h-11 rounded-full bg-[#BFFF00] text-[14px] font-semibold"
+                  >
+                    {
+                      t.save
+                    }
+                  </button>
+
+                </div>
+
+              </div>
+            )}
+
+            <div className="mt-6 space-y-4 font-pretendard text-[14px]">
 
               <div className="flex justify-between">
 
@@ -3468,15 +3481,11 @@ export default function Home() {
 
         <div className="hide-scrollbar flex-1 overflow-y-auto px-6 pb-7 pt-8">
 
-          <h1
-            className={
-              headlineClass
-            }
-          >
+          <Headline>
             {
               t.settings
             }
-          </h1>
+          </Headline>
 
           <p
             className={`${bodyClass} mt-3 text-[#202020]/45`}
@@ -3513,7 +3522,7 @@ export default function Home() {
                     "en"
                   )
                 }
-                className={`h-[52px] rounded-[16px] font-pretendard text-[14px] font-semibold ${
+                className={`font-pretendard h-[52px] rounded-[16px] text-[14px] font-semibold ${
                   appLanguage ===
                   "en"
                     ? "bg-[#BFFF00]"
@@ -3530,7 +3539,7 @@ export default function Home() {
                     "ko"
                   )
                 }
-                className={`h-[52px] rounded-[16px] font-pretendard text-[14px] font-semibold ${
+                className={`font-pretendard h-[52px] rounded-[16px] text-[14px] font-semibold ${
                   appLanguage ===
                   "ko"
                     ? "bg-[#BFFF00]"
@@ -3539,6 +3548,40 @@ export default function Home() {
               >
                 한국어
               </button>
+
+            </div>
+
+            <div className="mt-3 grid grid-cols-2 gap-2">
+
+              {[
+                "日本語",
+                "中文",
+                "Español",
+                "Français",
+              ].map(
+                (
+                  item
+                ) => (
+                  <button
+                    key={
+                      item
+                    }
+                    type="button"
+                    disabled
+                    className="font-pretendard relative h-[48px] cursor-not-allowed rounded-[15px] bg-[#F5F5F5] text-[13px] font-medium text-[#202020]/30"
+                  >
+
+                    {
+                      item
+                    }
+
+                    <span className="absolute right-2 top-2 rounded-full bg-[#E8E8E8] px-2 py-[2px] text-[8px] font-semibold">
+                      Soon
+                    </span>
+
+                  </button>
+                )
+              )}
 
             </div>
 
@@ -3556,78 +3599,65 @@ export default function Home() {
 
           <div className="overflow-hidden rounded-[24px] bg-white">
 
-            <div className="p-5">
+            <div className="flex items-center justify-between p-5">
 
-              <div className="flex items-center justify-between">
+              <div>
 
-                <div>
-
-                  <p className="font-pretendard text-[15px] font-semibold">
-                    {
-                      t.displayName
-                    }
-                  </p>
-
-                  <p className="font-pretendard mt-1 text-[13px] text-[#202020]/40">
-                    {
-                      displayName
-                    }
-                  </p>
-
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() =>
-                    setEditingName(
-                      !editingName
-                    )
-                  }
-                  className="font-pretendard text-[14px] font-semibold text-[#202020]/40"
-                >
+                <p className="font-pretendard text-[15px] font-semibold">
                   {
-                    t.edit
-                  }{" "}
-                  ›
-                </button>
+                    t.displayName
+                  }
+                </p>
+
+                <p className="font-pretendard mt-1 text-[13px] text-[#202020]/40">
+                  {
+                    displayName
+                  }
+                </p>
 
               </div>
 
-              {editingName && (
-                <div className="mt-4">
-
-                  <input
-                    value={
-                      displayName
-                    }
-                    onChange={(
-                      event
-                    ) =>
-                      setDisplayName(
-                        event.target.value
-                      )
-                    }
-                    className="font-pretendard h-[50px] w-full rounded-[16px] bg-[#F5F5F5] px-4 outline-none"
-                  />
-
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setEditingName(
-                        false
-                      )
-                    }
-                    className="font-pretendard mt-2 h-[46px] w-full rounded-full bg-[#BFFF00] font-semibold"
-                  >
-                    {
-                      t.save
-                    }
-                  </button>
-
-                </div>
-              )}
+              <button
+                type="button"
+                onClick={() =>
+                  setStep(
+                    "profile"
+                  )
+                }
+                className="font-pretendard text-[14px] font-semibold text-[#202020]/40"
+              >
+                {
+                  t.edit
+                }{" "}
+                ›
+              </button>
 
             </div>
+
+            <button
+              type="button"
+              onClick={() =>
+                alert(
+                  appLanguage ===
+                    "ko"
+                    ? "계정 관리 기능은 추후 실제 계정 시스템과 연결할 수 있어요."
+                    : "Account management can later be connected to the real account system."
+                )
+              }
+              className="font-pretendard flex w-full items-center justify-between border-t border-black/[0.05] p-5"
+            >
+
+              <span className="text-[15px] font-semibold">
+                {
+                  t.manageAccount
+                }
+              </span>
+
+              <span className="text-[#202020]/30">
+                ›
+              </span>
+
+            </button>
 
           </div>
 
@@ -3665,7 +3695,7 @@ export default function Home() {
                         item.name
                       )
                     }
-                    className={`h-[48px] rounded-[15px] font-pretendard text-[13px] font-semibold ${
+                    className={`font-pretendard h-[48px] rounded-[15px] text-[13px] font-semibold ${
                       language ===
                       item.name
                         ? "bg-[#BFFF00]"
@@ -3685,6 +3715,84 @@ export default function Home() {
 
             </div>
 
+            <p className="font-pretendard mb-3 mt-6 text-[14px] font-semibold">
+              {
+                t.yourLevel
+              }
+            </p>
+
+            <div className="grid grid-cols-3 gap-2">
+
+              {levels.map(
+                (
+                  item
+                ) => (
+                  <button
+                    key={
+                      item.value
+                    }
+                    type="button"
+                    onClick={() =>
+                      setLevel(
+                        item.value
+                      )
+                    }
+                    className={`font-pretendard h-[46px] rounded-[14px] text-[12px] font-semibold ${
+                      level ===
+                      item.value
+                        ? "bg-[#BFFF00]"
+                        : "bg-[#F5F5F5]"
+                    }`}
+                  >
+                    {appLanguage ===
+                    "ko"
+                      ? item.ko
+                      : item.value}
+                  </button>
+                )
+              )}
+
+            </div>
+
+            <p className="font-pretendard mb-3 mt-6 text-[14px] font-semibold">
+              {
+                t.learningGoal
+              }
+            </p>
+
+            <div className="grid grid-cols-2 gap-2">
+
+              {goals.map(
+                (
+                  item
+                ) => (
+                  <button
+                    key={
+                      item.value
+                    }
+                    type="button"
+                    onClick={() =>
+                      setGoal(
+                        item.value
+                      )
+                    }
+                    className={`font-pretendard h-[46px] rounded-[14px] text-[13px] font-semibold ${
+                      goal ===
+                      item.value
+                        ? "bg-[#BFFF00]"
+                        : "bg-[#F5F5F5]"
+                    }`}
+                  >
+                    {appLanguage ===
+                    "ko"
+                      ? item.ko
+                      : item.value}
+                  </button>
+                )
+              )}
+
+            </div>
+
           </div>
 
           {/* NOTIFICATIONS */}
@@ -3693,7 +3801,7 @@ export default function Home() {
             className={`${sectionTitleClass} mb-3 mt-7`}
           >
             {
-              t.notificationsSection
+              t.notificationsTitle
             }
           </p>
 
@@ -3732,11 +3840,21 @@ export default function Home() {
 
             <div className="flex items-center justify-between border-b border-black/[0.05] p-5">
 
-              <p className="font-pretendard text-[15px] font-semibold">
-                {
-                  t.sound
-                }
-              </p>
+              <div>
+
+                <p className="font-pretendard text-[15px] font-semibold">
+                  {
+                    t.sound
+                  }
+                </p>
+
+                <p className="font-pretendard mt-1 text-[12px] text-[#202020]/40">
+                  {
+                    t.soundDesc
+                  }
+                </p>
+
+              </div>
 
               <Toggle
                 value={
@@ -3753,23 +3871,36 @@ export default function Home() {
 
             <div className="flex items-center justify-between p-5">
 
-              <p className="font-pretendard text-[15px] font-semibold">
-                {
-                  t.vibration
-                }
-              </p>
+              <div>
+
+                <p className="font-pretendard text-[15px] font-semibold">
+                  {
+                    t.vibration
+                  }
+                </p>
+
+                <p className="font-pretendard mt-1 text-[12px] text-[#202020]/40">
+                  {
+                    t.vibrationDesc
+                  }
+                </p>
+
+              </div>
 
               <Toggle
                 value={
                   vibration
                 }
                 onChange={() => {
+                  const next =
+                    !vibration;
+
                   setVibration(
-                    !vibration
+                    next
                   );
 
                   if (
-                    !vibration &&
+                    next &&
                     "vibrate" in
                       navigator
                   ) {
@@ -3803,7 +3934,7 @@ export default function Home() {
                   "character"
                 )
               }
-              className="flex w-full items-center justify-between border-b border-black/[0.05] p-5 font-pretendard"
+              className="font-pretendard flex w-full items-center justify-between border-b border-black/[0.05] p-5"
             >
 
               <span className="font-semibold">
@@ -3812,7 +3943,7 @@ export default function Home() {
                 }
               </span>
 
-              <span>
+              <span className="text-[#202020]/30">
                 ›
               </span>
 
@@ -3821,8 +3952,22 @@ export default function Home() {
             <button
               type="button"
               onClick={() => {
-                localStorage.removeItem(
-                  "plabla-settings"
+                const confirmed =
+                  window.confirm(
+                    appLanguage ===
+                      "ko"
+                      ? "학습 언어, 레벨, 목표, 캐릭터를 처음부터 다시 설정할까요?"
+                      : "Set up your language, level, goal and character again?"
+                  );
+
+                if (
+                  !confirmed
+                ) {
+                  return;
+                }
+
+                setOnboardingComplete(
+                  false
                 );
 
                 setLanguage(
@@ -3838,19 +3983,121 @@ export default function Home() {
                 );
 
                 setStep(
-                  "app-language"
+                  "language"
                 );
               }}
-              className="flex w-full items-center justify-between p-5 font-pretendard"
+              className="font-pretendard flex w-full items-center justify-between border-b border-black/[0.05] p-5"
             >
 
-              <span className="font-semibold text-red-500">
+              <span className="font-semibold">
                 {
-                  t.resetAppData
+                  t.setupAgain
                 }
               </span>
 
-              <span>
+              <span className="text-[#202020]/30">
+                ›
+              </span>
+
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                const confirmed =
+                  window.confirm(
+                    appLanguage ===
+                      "ko"
+                      ? "이 기기에 저장된 PlaBla 데이터를 모두 초기화할까요?"
+                      : "Reset all PlaBla data stored on this device?"
+                  );
+
+                if (
+                  !confirmed
+                ) {
+                  return;
+                }
+
+                localStorage.removeItem(
+                  "plabla-settings"
+                );
+
+                setAppLanguage(
+                  "en"
+                );
+
+                setLanguage(
+                  null
+                );
+
+                setLevel(
+                  null
+                );
+
+                setGoal(
+                  null
+                );
+
+                setBodyColor(
+                  "#C7F238"
+                );
+
+                setLeftEye(
+                  "P"
+                );
+
+                setRightEye(
+                  "B"
+                );
+
+                setDisplayName(
+                  "Bunnies"
+                );
+
+                setProfileNameDraft(
+                  "Bunnies"
+                );
+
+                setNotifications(
+                  true
+                );
+
+                setSound(
+                  true
+                );
+
+                setVibration(
+                  true
+                );
+
+                setOnboardingComplete(
+                  false
+                );
+
+                setStep(
+                  "start"
+                );
+              }}
+              className="font-pretendard flex w-full items-center justify-between p-5"
+            >
+
+              <div className="text-left">
+
+                <p className="font-semibold text-red-500">
+                  {
+                    t.resetAppData
+                  }
+                </p>
+
+                <p className="mt-1 text-[12px] text-[#202020]/35">
+                  {
+                    t.resetAppDataDesc
+                  }
+                </p>
+
+              </div>
+
+              <span className="text-red-400">
                 ›
               </span>
 

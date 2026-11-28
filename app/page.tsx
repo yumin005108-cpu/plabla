@@ -1980,13 +1980,13 @@ export default function Home() {
               src="/plabla-logo-transparent.svg"
               alt="PlaBla"
               width={
-                135
+                170
               }
               height={
                 90
               }
               priority
-              className="h-auto w-[135px]"
+              className="h-auto w-[170px]"
             />
           </div>
         </div>

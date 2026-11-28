@@ -415,7 +415,6 @@ const spaces: {
 
 /* =====================================================
    STABLE UI COMPONENTS
-   ★ Home 밖에 위치해야 함
 ===================================================== */
 
 function MobileFrame({
@@ -915,7 +914,7 @@ function createEyeTexture(
 }
 
 /* =====================================================
-   EYE
+   EYE 3D
 ===================================================== */
 
 function Eye3D({
@@ -1127,12 +1126,14 @@ function CharacterModel({
           object={model}
         />
 
+        {/* 새 OBJ 기준 눈 좌표 */}
+
         <Eye3D
           text={leftEye}
           position={[
             -27.46,
             1.43,
-            -23.72,
+            -22.614,
           ]}
           rotation={[
             0,
@@ -1147,7 +1148,7 @@ function CharacterModel({
           position={[
             -27.86,
             1.43,
-            -23.72,
+            -22.614,
           ]}
           rotation={[
             0,
@@ -1759,11 +1760,6 @@ export default function Home() {
     setLoaded,
   ] =
     useState(false);
-
-  /*
-    캐릭터 수정 화면으로
-    어디서 들어왔는지 저장
-  */
 
   const [
     characterReturnStep,
@@ -3399,12 +3395,6 @@ export default function Home() {
   ) {
     return (
       <MobileFrame>
-        {/*
-          ★ 이 DIV가 계속 같은 DOM으로 유지됨.
-          state 변경해도 remount되지 않기 때문에
-          스크롤 위치가 그대로 유지됨.
-        */}
-
         <div className="hide-scrollbar flex-1 overflow-y-auto px-6 pb-7 pt-8">
           <Headline
             appLanguage={

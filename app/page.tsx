@@ -262,76 +262,31 @@ const languages: {
   symbol: string;
   ko: string;
 }[] = [
-  {
-    name: "Korean",
-    symbol: "한",
-    ko: "한국어",
-  },
-  {
-    name: "English",
-    symbol: "A",
-    ko: "영어",
-  },
-  {
-    name: "Japanese",
-    symbol: "あ",
-    ko: "일본어",
-  },
-  {
-    name: "Chinese",
-    symbol: "中",
-    ko: "중국어",
-  },
-  {
-    name: "Spanish",
-    symbol: "Ñ",
-    ko: "스페인어",
-  },
-  {
-    name: "French",
-    symbol: "É",
-    ko: "프랑스어",
-  },
+  { name: "Korean", symbol: "한", ko: "한국어" },
+  { name: "English", symbol: "A", ko: "영어" },
+  { name: "Japanese", symbol: "あ", ko: "일본어" },
+  { name: "Chinese", symbol: "中", ko: "중국어" },
+  { name: "Spanish", symbol: "Ñ", ko: "스페인어" },
+  { name: "French", symbol: "É", ko: "프랑스어" },
 ];
 
 const levels: {
   value: Level;
   ko: string;
 }[] = [
-  {
-    value: "Beginner",
-    ko: "초급",
-  },
-  {
-    value: "Intermediate",
-    ko: "중급",
-  },
-  {
-    value: "Advanced",
-    ko: "고급",
-  },
+  { value: "Beginner", ko: "초급" },
+  { value: "Intermediate", ko: "중급" },
+  { value: "Advanced", ko: "고급" },
 ];
 
 const goals: {
   value: Goal;
   ko: string;
 }[] = [
-  {
-    value: "Conversation",
-    ko: "회화",
-  },
-  {
-    value: "Travel",
-    ko: "여행",
-  },
-  {
-    value: "Study",
-    ko: "학습",
-  },
-  {
-    value: "Culture",
-    ko: "문화",
-  },
+  { value: "Conversation", ko: "회화" },
+  { value: "Travel", ko: "여행" },
+  { value: "Study", ko: "학습" },
+  { value: "Culture", ko: "문화" },
 ];
 
 const bodyColors = [
@@ -344,16 +299,7 @@ const bodyColors = [
   "#FFB58E",
 ];
 
-const eyeSuggestions = [
-  "P",
-  "B",
-  "の",
-  "中",
-  "あ",
-  "ㅎ",
-  "Ω",
-  "丸",
-];
+const eyeSuggestions = ["P", "B", "の", "中", "あ", "ㅎ", "Ω", "丸"];
 
 const spaces: {
   name: Space;
@@ -414,7 +360,7 @@ const spaces: {
 ];
 
 /* =====================================================
-   STABLE UI COMPONENTS
+   COMMON UI
 ===================================================== */
 
 function MobileFrame({
@@ -451,8 +397,7 @@ function Headline({
             : "text-[#202020]"
         } ${className}`}
         style={{
-          fontFamily:
-            '"SOYOMaple", sans-serif',
+          fontFamily: '"SOYOMaple", sans-serif',
           fontWeight: 700,
         }}
       >
@@ -870,8 +815,7 @@ function createEyeTexture(
 
   ctx.font =
     `650 ${fontSize}px ` +
-    `"Pretendard Variable", ` +
-    `Pretendard, Arial, sans-serif`;
+    `"Pretendard Variable", Pretendard, Arial, sans-serif`;
 
   ctx.fillStyle =
     "#272727";
@@ -1007,7 +951,7 @@ function Eye3D({
 }
 
 /* =====================================================
-   CHARACTER MODEL
+   CHARACTER
 ===================================================== */
 
 function CharacterModel({
@@ -1162,10 +1106,6 @@ function CharacterModel({
   );
 }
 
-/* =====================================================
-   CHARACTER VIEW
-===================================================== */
-
 function CharacterView({
   bodyColor,
   leftEye,
@@ -1264,7 +1204,7 @@ function CharacterView({
 }
 
 /* =====================================================
-   CUSTOM COLOR
+   CUSTOM COLOR PICKER
 ===================================================== */
 
 function CustomColorPicker({
@@ -1622,6 +1562,12 @@ function CustomColorPicker({
 ===================================================== */
 
 export default function Home() {
+  /*
+    ★ 중요
+    처음 렌더될 때 무조건 start.
+    저장된 유저여도 바로 home으로 보내지 않음.
+  */
+
   const [
     step,
     setStep,
@@ -1793,7 +1739,9 @@ export default function Home() {
     );
 
   /* =====================================================
-     LOAD
+     LOAD SAVED DATA
+
+     ★ 여기서 절대 setStep("home") 안 함
   ===================================================== */
 
   useEffect(() => {
@@ -1910,10 +1858,6 @@ export default function Home() {
           setOnboardingComplete(
             true
           );
-
-          setStep(
-            "home"
-          );
         }
       }
     } catch {
@@ -1924,6 +1868,49 @@ export default function Home() {
       true
     );
   }, []);
+
+  /* =====================================================
+     SPLASH
+
+     ★ 무조건 로고를 먼저 보여준 뒤 이동
+  ===================================================== */
+
+  useEffect(() => {
+    if (
+      !loaded ||
+      step !== "start"
+    ) {
+      return;
+    }
+
+    const timer =
+      window.setTimeout(
+        () => {
+          if (
+            onboardingComplete
+          ) {
+            setStep(
+              "home"
+            );
+          } else {
+            setStep(
+              "language"
+            );
+          }
+        },
+        1500
+      );
+
+    return () => {
+      window.clearTimeout(
+        timer
+      );
+    };
+  }, [
+    loaded,
+    step,
+    onboardingComplete,
+  ]);
 
   /* =====================================================
      SAVE
@@ -1969,42 +1956,16 @@ export default function Home() {
     onboardingComplete,
   ]);
 
-  /* =====================================================
-     SPLASH
-  ===================================================== */
-
-  useEffect(() => {
-    if (
-      !loaded ||
-      onboardingComplete ||
-      step !== "start"
-    ) {
-      return;
-    }
-
-    const timer =
-      setTimeout(() => {
-        setStep(
-          "language"
-        );
-      }, 2000);
-
-    return () =>
-      clearTimeout(
-        timer
-      );
-  }, [
-    loaded,
-    onboardingComplete,
-    step,
-  ]);
-
-  if (!loaded) {
-    return null;
-  }
+  /*
+    loaded 전에도 빈 화면을 보여주지 않고
+    바로 splash 디자인을 보여주기 위해
+    별도 return null 없음.
+  */
 
   /* =====================================================
-     START
+     START / SPLASH
+
+     ★ 로고 크기 작게 수정
   ===================================================== */
 
   if (
@@ -2014,17 +1975,20 @@ export default function Home() {
     return (
       <MobileFrame>
         <div className="flex flex-1 items-center justify-center">
-          <Image
-            src="/plabla-logo-transparent.svg"
-            alt="PlaBla"
-            width={
-              210
-            }
-            height={
-              140
-            }
-            priority
-          />
+          <div className="flex -translate-y-4 flex-col items-center justify-center">
+            <Image
+              src="/plabla-logo-transparent.svg"
+              alt="PlaBla"
+              width={
+                135
+              }
+              height={
+                90
+              }
+              priority
+              className="h-auto w-[135px]"
+            />
+          </div>
         </div>
       </MobileFrame>
     );
@@ -2621,9 +2585,7 @@ export default function Home() {
                   ) =>
                     setLeftEye(
                       Array.from(
-                        event
-                          .target
-                          .value
+                        event.target.value
                       )
                         .slice(-1)
                         .join("")
@@ -2646,9 +2608,7 @@ export default function Home() {
                   ) =>
                     setRightEye(
                       Array.from(
-                        event
-                          .target
-                          .value
+                        event.target.value
                       )
                         .slice(-1)
                         .join("")
@@ -3414,8 +3374,6 @@ export default function Home() {
             }
           </p>
 
-          {/* APP LANGUAGE */}
-
           <p
             className={`${sectionTitleClass} mb-3 mt-7`}
           >
@@ -3498,8 +3456,6 @@ export default function Home() {
             </div>
           </div>
 
-          {/* ACCOUNT */}
-
           <p
             className={`${sectionTitleClass} mb-3 mt-7`}
           >
@@ -3567,8 +3523,6 @@ export default function Home() {
               </span>
             </button>
           </div>
-
-          {/* LEARNING */}
 
           <p
             className={`${sectionTitleClass} mb-3 mt-7`}
@@ -3694,8 +3648,6 @@ export default function Home() {
             </div>
           </div>
 
-          {/* NOTIFICATIONS */}
-
           <p
             className={`${sectionTitleClass} mb-3 mt-7`}
           >
@@ -3811,8 +3763,6 @@ export default function Home() {
               />
             </div>
           </div>
-
-          {/* APP */}
 
           <p
             className={`${sectionTitleClass} mb-3 mt-7`}
@@ -3973,6 +3923,10 @@ export default function Home() {
                 setCharacterReturnStep(
                   "info"
                 );
+
+                /*
+                  초기화 후에도 splash부터
+                */
 
                 setStep(
                   "start"
